@@ -2885,19 +2885,16 @@ functionList = [
    Type.from_result),
 
   ("clang_getRecordAlignment",
-   [Type],
-   Type,
-   Type.from_result),
+   [TranslationUnit, Cursor],
+   c_longlong),
 
   ("clang_getRecordFieldOffset",
-   [Type],
-   Type,
-   Type.from_result),
+   [TranslationUnit, Cursor],
+   c_longlong),
 
   ("clang_getRecordSize",
-   [Type],
-   Type,
-   Type.from_result),
+   [TranslationUnit, Cursor],
+   c_longlong),
 
   ("clang_getSpecializedCursorTemplate",
    [Cursor],

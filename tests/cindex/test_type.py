@@ -3,6 +3,7 @@ import gc
 from clang.cindex import CursorKind
 from clang.cindex import TranslationUnit
 from clang.cindex import TypeKind
+from clang.cindex import conf
 from nose.tools import raises
 from .util import get_cursor
 from .util import get_tu
@@ -25,6 +26,7 @@ struct teststruct {
 """
 
 def test_a_struct():
+    import ctypes    
     tu = get_tu(kInput)
 
     teststruct = get_cursor(tu, 'teststruct')
@@ -32,49 +34,65 @@ def test_a_struct():
     fields = list(teststruct.get_children())
     assert all(x.kind == CursorKind.FIELD_DECL for x in fields)
     assert all(x.translation_unit is not None for x in fields)
+    
+    align = teststruct.get_record_alignment()
+    assert align == ctypes.sizeof(ctypes.c_long)
 
     assert fields[0].spelling == 'a'
     assert not fields[0].type.is_const_qualified()
     assert fields[0].type.kind == TypeKind.INT
     assert fields[0].type.get_canonical().kind == TypeKind.INT
+    assert fields[0].get_record_field_offset() == 0
 
     assert fields[1].spelling == 'b'
     assert not fields[1].type.is_const_qualified()
     assert fields[1].type.kind == TypeKind.TYPEDEF
     assert fields[1].type.get_canonical().kind == TypeKind.INT
     assert fields[1].type.get_declaration().spelling == 'I'
+    assert fields[1].get_record_field_offset() == 8*(ctypes.sizeof(ctypes.c_int))
 
     assert fields[2].spelling == 'c'
     assert not fields[2].type.is_const_qualified()
     assert fields[2].type.kind == TypeKind.LONG
     assert fields[2].type.get_canonical().kind == TypeKind.LONG
+    assert fields[2].get_record_field_offset() == 8*(2*ctypes.sizeof(ctypes.c_int))
 
     assert fields[3].spelling == 'd'
     assert not fields[3].type.is_const_qualified()
     assert fields[3].type.kind == TypeKind.ULONG
     assert fields[3].type.get_canonical().kind == TypeKind.ULONG
+    assert fields[3].get_record_field_offset() == 8*(2*ctypes.sizeof(ctypes.c_int)+ctypes.sizeof(ctypes.c_long))
 
     assert fields[4].spelling == 'e'
     assert not fields[4].type.is_const_qualified()
     assert fields[4].type.kind == TypeKind.LONG
     assert fields[4].type.get_canonical().kind == TypeKind.LONG
-
+    assert fields[4].get_record_field_offset() == 8*(2*ctypes.sizeof(ctypes.c_int)+2*ctypes.sizeof(ctypes.c_long))
+    
     assert fields[5].spelling == 'f'
     assert fields[5].type.is_const_qualified()
     assert fields[5].type.kind == TypeKind.INT
     assert fields[5].type.get_canonical().kind == TypeKind.INT
-
+    assert fields[5].get_record_field_offset() == 8*(2*ctypes.sizeof(ctypes.c_int)+3*ctypes.sizeof(ctypes.c_long))
+    
     assert fields[6].spelling == 'g'
     assert not fields[6].type.is_const_qualified()
     assert fields[6].type.kind == TypeKind.POINTER
     assert fields[6].type.get_pointee().kind == TypeKind.INT
-
+    # alignment on x64
+    assert fields[6].get_record_field_offset() == 8*(36%align+3*ctypes.sizeof(ctypes.c_int)+3*ctypes.sizeof(ctypes.c_long))
+    
     assert fields[7].spelling == 'h'
     assert not fields[7].type.is_const_qualified()
     assert fields[7].type.kind == TypeKind.POINTER
     assert fields[7].type.get_pointee().kind == TypeKind.POINTER
     assert fields[7].type.get_pointee().get_pointee().kind == TypeKind.POINTER
     assert fields[7].type.get_pointee().get_pointee().get_pointee().kind == TypeKind.INT
+    assert fields[7].get_record_field_offset() == 8*(4+3*ctypes.sizeof(ctypes.c_int)+ 
+        3*ctypes.sizeof(ctypes.c_long)+ctypes.sizeof(ctypes.POINTER(ctypes.c_int)) )
+    
+    s = fields[7].get_record_field_offset()/8+ctypes.sizeof(ctypes.POINTER(ctypes.c_int))
+    assert conf.lib.clang_getRecordSize(tu, teststruct) == s+s%align 
 
 def test_references():
     """Ensure that a Type maintains a reference to a TranslationUnit."""

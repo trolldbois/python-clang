@@ -1314,6 +1314,30 @@ class Cursor(Structure):
         """
         return TokenGroup.get_tokens(self._tu, self.extent)
 
+    def get_record_alignment(self):
+        """
+        Retrieve the alignment of the record.
+        """
+        if not hasattr(self, '_record_align'):
+            self._record_align = conf.lib.clang_getRecordAlignment(self._tu, self)
+        return self._record_align
+
+    def get_record_field_offset(self):
+        """
+        Retrieve the offset of a field in his record, in number of bits.
+        """
+        if not hasattr(self, '_record_field_offset'):
+            self._record_field_offset = conf.lib.clang_getRecordFieldOffset(self._tu, self)
+        return self._record_field_offset
+
+    def get_record_size(self):
+        """
+        Retrieve the size of the record.
+        """
+        if not hasattr(self, '_record_size'):
+            self._record_size = conf.lib.clang_getRecordSize(self._tu, self)
+        return self._record_size
+
     @staticmethod
     def from_result(res, fn, args):
         assert isinstance(res, Cursor)
@@ -2894,7 +2918,7 @@ functionList = [
 
   ("clang_getRecordSize",
    [TranslationUnit, Cursor],
-   c_longlong),
+   c_ulonglong),
 
   ("clang_getSpecializedCursorTemplate",
    [Cursor],

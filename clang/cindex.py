@@ -508,7 +508,7 @@ class CursorKind(object):
     @staticmethod
     def from_id(id):
         if id >= len(CursorKind._kinds) or CursorKind._kinds[id] is None:
-            raise ValueError,'Unknown cursor kind %d' % id
+            raise ValueError,'Unknown cursor kind'
         return CursorKind._kinds[id]
 
     @staticmethod
@@ -721,13 +721,9 @@ CursorKind.MEMBER_REF = CursorKind(47)
 # A reference to a labeled statement.
 CursorKind.LABEL_REF = CursorKind(48)
 
-# A reference to a set of overloaded functions or function templates
+# A reference toa a set of overloaded functions or function templates
 # that has not yet been resolved to a specific function or function template.
 CursorKind.OVERLOADED_DECL_REF = CursorKind(49)
-
-# A reference to a variable that occurs in some non-expression 
-# context, e.g., a C++ lambda capture list.
-CursorKind.VARIABLE_REF = CursorKind(50)
 
 ###
 # Invalid/Error Kinds
@@ -912,26 +908,6 @@ CursorKind.PACK_EXPANSION_EXPR = CursorKind(142)
 # pack.
 CursorKind.SIZE_OF_PACK_EXPR = CursorKind(143)
 
-# Represents a C++ lambda expression that produces a local function
-# object.
-# 
-#  \code
-#  void abssort(float *x, unsigned N) {
-#    std::sort(x, x + N,
-#              [](float a, float b) {
-#                return std::abs(a) < std::abs(b);
-#              });
-#  }
-#  \endcode
-CursorKind.LAMBDA_EXPR = CursorKind(144)
-  
-# Objective-c Boolean Literal.
-CursorKind.OBJ_BOOL_LITERAL_EXPR = CursorKind(145)
-
-# Represents the "self" expression in a ObjC method.
-CursorKind.OBJ_SELF_EXPR = CursorKind(146)
-
-
 # A statement whose specific kind is not exposed via this interface.
 #
 # Unexposed statements have the same operations as any other kind of statement;
@@ -1023,9 +999,6 @@ CursorKind.SEH_EXCEPT_STMT = CursorKind(227)
 # Windows Structured Exception Handling's finally statement.
 CursorKind.SEH_FINALLY_STMT = CursorKind(228)
 
-# A MS inline assembly statement extension.
-CursorKind.MS_ASM_STMT = CursorKind(229)
-
 # The null statement.
 CursorKind.NULL_STMT = CursorKind(230)
 
@@ -1062,12 +1035,6 @@ CursorKind.PREPROCESSING_DIRECTIVE = CursorKind(500)
 CursorKind.MACRO_DEFINITION = CursorKind(501)
 CursorKind.MACRO_INSTANTIATION = CursorKind(502)
 CursorKind.INCLUSION_DIRECTIVE = CursorKind(503)
-
-###
-# Extra declaration
-
-# A module import declaration.
-CursorKind.MODULE_IMPORT_DECL = CursorKind(600)
 
 ### Cursors ###
 
@@ -1304,17 +1271,6 @@ class Cursor(Structure):
         # created.
         return self._tu
 
-    @property
-    def referenced(self):
-        """
-        For a cursor that is a reference, returns a cursor 
-        representing the entity that it references.
-        """
-        if not hasattr(self, '_referenced'):
-            self._referenced = conf.lib.clang_getCursorReferenced(self)
-
-        return self._referenced
-
     def get_arguments(self):
         """Return an iterator for accessing the arguments of this cursor."""
         num_args = conf.lib.clang_Cursor_getNumArguments(self)
@@ -1346,18 +1302,6 @@ class Cursor(Structure):
         occupy the extent this cursor occupies.
         """
         return TokenGroup.get_tokens(self._tu, self.extent)
-
-    def is_bitfield(self):
-        """
-        Check if the field is a bitfield.
-        """
-        return conf.lib.clang_Cursor_isBitField(self)
-
-    def get_bitfield_width(self):
-        """
-        Retrieve the width of a bitfield.
-        """
-        return conf.lib.clang_getFieldDeclBitWidth(self)
 
     @staticmethod
     def from_result(res, fn, args):
@@ -1483,9 +1427,6 @@ TypeKind.FUNCTIONNOPROTO = TypeKind(110)
 TypeKind.FUNCTIONPROTO = TypeKind(111)
 TypeKind.CONSTANTARRAY = TypeKind(112)
 TypeKind.VECTOR = TypeKind(113)
-TypeKind.INCOMPLETEARRAY = TypeKind(114)
-TypeKind.VARIABLEARRAY = TypeKind(115)
-TypeKind.DEPENDENTSIZEDARRAY = TypeKind(116)
 
 class Type(Structure):
     """
@@ -1661,24 +1602,6 @@ class Type(Structure):
         """
         return conf.lib.clang_getArraySize(self)
 
-    def get_align(self):
-        """
-        Retrieve the alignment of the record.
-        """
-        return conf.lib.clang_Type_getAlignOf(self)
-
-    def get_size(self):
-        """
-        Retrieve the size of the record.
-        """
-        return conf.lib.clang_Type_getSizeOf(self)
-
-    def get_offset(self, fieldname):
-        """
-        Retrieve the offset of a field in the record.
-        """
-        return conf.lib.clang_Type_getOffsetOf(self, c_char_p(fieldname))
-
     def __eq__(self, other):
         if type(other) != type(self):
             return False
@@ -1711,33 +1634,6 @@ class _CXUnsavedFile(Structure):
     """Helper for passing unsaved file arguments."""
     _fields_ = [("name", c_char_p), ("contents", c_char_p), ('length', c_ulong)]
 
-# Functions calls through the python interface are rather slow. Fortunately,
-# for most symboles, we do not need to perform a function call. Their spelling
-# never changes and is consequently provided by this spelling cache.
-SpellingCache = {
-            # 0: CompletionChunk.Kind("Optional"),
-            # 1: CompletionChunk.Kind("TypedText"),
-            # 2: CompletionChunk.Kind("Text"),
-            # 3: CompletionChunk.Kind("Placeholder"),
-            # 4: CompletionChunk.Kind("Informative"),
-            # 5 : CompletionChunk.Kind("CurrentParameter"),
-            6: '(',   # CompletionChunk.Kind("LeftParen"),
-            7: ')',   # CompletionChunk.Kind("RightParen"),
-            8: ']',   # CompletionChunk.Kind("LeftBracket"),
-            9: ']',   # CompletionChunk.Kind("RightBracket"),
-            10: '{',  # CompletionChunk.Kind("LeftBrace"),
-            11: '}',  # CompletionChunk.Kind("RightBrace"),
-            12: '<',  # CompletionChunk.Kind("LeftAngle"),
-            13: '>',  # CompletionChunk.Kind("RightAngle"),
-            14: ', ', # CompletionChunk.Kind("Comma"),
-            # 15: CompletionChunk.Kind("ResultType"),
-            16: ':',  # CompletionChunk.Kind("Colon"),
-            17: ';',  # CompletionChunk.Kind("SemiColon"),
-            18: '=',  # CompletionChunk.Kind("Equal"),
-            19: ' ',  # CompletionChunk.Kind("HorizontalSpace"),
-            # 20: CompletionChunk.Kind("VerticalSpace")
-}
-
 class CompletionChunk:
     class Kind:
         def __init__(self, name):
@@ -1752,30 +1648,18 @@ class CompletionChunk:
     def __init__(self, completionString, key):
         self.cs = completionString
         self.key = key
-        self.__kindNumberCache = -1
 
     def __repr__(self):
         return "{'" + self.spelling + "', " + str(self.kind) + "}"
 
     @CachedProperty
     def spelling(self):
-        if self.__kindNumber in SpellingCache:
-                return SpellingCache[self.__kindNumber]
         return conf.lib.clang_getCompletionChunkText(self.cs, self.key).spelling
-
-    # We do not use @CachedProperty here, as the manual implementation is
-    # apparently still significantly faster. Please profile carefully if you
-    # would like to add CachedProperty back.
-    @property
-    def __kindNumber(self):
-        if self.__kindNumberCache == -1:
-            self.__kindNumberCache = \
-                conf.lib.clang_getCompletionChunkKind(self.cs, self.key)
-        return self.__kindNumberCache
 
     @CachedProperty
     def kind(self):
-        return completionChunkKindMap[self.__kindNumber]
+        res = conf.lib.clang_getCompletionChunkKind(self.cs, self.key)
+        return completionChunkKindMap[res]
 
     @CachedProperty
     def string(self):
@@ -1788,19 +1672,19 @@ class CompletionChunk:
           None
 
     def isKindOptional(self):
-      return self.__kindNumber == 0
+      return self.kind == completionChunkKindMap[0]
 
     def isKindTypedText(self):
-      return self.__kindNumber == 1
+      return self.kind == completionChunkKindMap[1]
 
     def isKindPlaceHolder(self):
-      return self.__kindNumber == 3
+      return self.kind == completionChunkKindMap[3]
 
     def isKindInformative(self):
-      return self.__kindNumber == 4
+      return self.kind == completionChunkKindMap[4]
 
     def isKindResultType(self):
-      return self.__kindNumber == 15
+      return self.kind == completionChunkKindMap[15]
 
 completionChunkKindMap = {
             0: CompletionChunk.Kind("Optional"),
@@ -1954,7 +1838,7 @@ class Index(ClangObject):
 
     def read(self, path):
         """Load a TranslationUnit from the given AST file."""
-        return TranslationUnit.from_ast_file(path, self)
+        return TranslationUnit.from_ast(path, self)
 
     def parse(self, path, args=None, unsaved_files=None, options = 0):
         """Load the translation unit from the given source code file by running
@@ -2081,7 +1965,7 @@ class TranslationUnit(ClangObject):
                                     len(args), unsaved_array,
                                     len(unsaved_files), options)
 
-        if not ptr:
+        if ptr is None:
             raise TranslationUnitLoadError("Error parsing translation unit.")
 
         return cls(ptr, index=index)
@@ -2103,7 +1987,7 @@ class TranslationUnit(ClangObject):
             index = Index.create()
 
         ptr = conf.lib.clang_createTranslationUnit(index, filename)
-        if not ptr:
+        if ptr is None:
             raise TranslationUnitLoadError(filename)
 
         return cls(ptr=ptr, index=index)
@@ -2626,10 +2510,6 @@ functionList = [
    [Index, c_char_p],
    c_object_p),
 
-  ("clang_CXXMethod_isPureVirtual",
-   [Cursor],
-   bool),
-
   ("clang_CXXMethod_isStatic",
    [Cursor],
    bool),
@@ -2692,10 +2572,6 @@ functionList = [
   ("clang_getArraySize",
    [Type],
    c_longlong),
-
-  ("clang_getFieldDeclBitWidth",
-   [Cursor],
-   c_int),
 
   ("clang_getCanonicalCursor",
    [Cursor],
@@ -3112,22 +2988,6 @@ functionList = [
    [Cursor, c_uint],
    Cursor,
    Cursor.from_result),
-
-  ("clang_Cursor_isBitField",
-   [Cursor],
-   bool),
-
-  ("clang_Type_getAlignOf",
-   [Type],
-   c_longlong),
-
-  ("clang_Type_getOffsetOf",
-   [Type, c_char_p],
-   c_longlong),
-
-  ("clang_Type_getSizeOf",
-   [Type],
-   c_ulonglong),
 ]
 
 class LibclangError(Exception):
@@ -3186,13 +3046,13 @@ class Config:
         Config.library_path = path
 
     @staticmethod
-    def set_library_file(filename):
-        """Set the exact location of libclang"""
+    def set_library_file(file):
+        """Set the exact location of libclang from"""
         if Config.loaded:
             raise Exception("library file must be set before before using " \
                             "any other functionalities in libclang.")
 
-        Config.library_file = filename
+        Config.library_file = path
 
     @staticmethod
     def set_compatibility_check(check_status):

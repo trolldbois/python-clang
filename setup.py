@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name="clang",
-    version="3.2",
+    version="3.3",
     description="libclang python bindings",
     long_description=open("README.txt").read(),
     url="https://github.com/trolldbois/python-clang",

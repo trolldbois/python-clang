@@ -10,5 +10,5 @@ cp -a ~/compil/llvm/llvm/tools/clang/bindings/python/examples .
 cp -a ~/compil/llvm/llvm/tools/clang/bindings/python/tests .
 
 git add clang examples tests
-git commit -m "$COMMIT"
+git commit -m "llvm-mirror/clang $COMMIT"
 git push

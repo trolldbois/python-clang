@@ -1680,6 +1680,13 @@ class Type(Structure):
         """
         return conf.lib.clang_Type_getOffsetOf(self, c_char_p(fieldname))
 
+    @property
+    def spelling(self):
+        if not hasattr(self, '_spelling'):
+            self._spelling = conf.lib.clang_getTypeSpelling(self)
+
+        return self._spelling
+
     def __eq__(self, other):
         if type(other) != type(self):
             return False
@@ -3014,6 +3021,11 @@ functionList = [
    _CXString,
    _CXString.from_result),
 
+  ("clang_getTypeSpelling",
+   [Type],
+   _CXString,
+   _CXString.from_result),
+
   ("clang_hashCursor",
    [Cursor],
    c_uint),
@@ -3128,7 +3140,7 @@ functionList = [
 
   ("clang_Type_getSizeOf",
    [Type],
-   c_ulonglong),
+   c_longlong),
 ]
 
 class LibclangError(Exception):

@@ -4,8 +4,8 @@ from clang.cindex import CursorKind
 from clang.cindex import TranslationUnit
 from clang.cindex import TypeKind
 from nose.tools import raises
-from .util import get_cursor
-from .util import get_tu
+from tests.cindex.util import get_cursor
+from tests.cindex.util import get_tu
 
 kInput = """\
 
@@ -240,9 +240,11 @@ def test_element_type():
     tu = get_tu('int c[5]; int i[]; int x; int v[x];')
     c = get_cursor(tu, 'c')
     i = get_cursor(tu, 'i')
+    x = get_cursor(tu, 'x')
     v = get_cursor(tu, 'v')
     assert c is not None
     assert i is not None
+    assert x is not None
     assert v is not None
 
     assert c.type.kind == TypeKind.CONSTANTARRAY
@@ -251,6 +253,11 @@ def test_element_type():
     assert i.type.element_type.kind == TypeKind.INT
     assert v.type.kind == TypeKind.VARIABLEARRAY
     assert v.type.element_type.kind == TypeKind.INT
+
+    assert c.type.spelling == "int [5]"
+    assert i.type.spelling == "int []"
+    assert x.type.spelling == "int"
+    assert v.type.spelling == "int [x]"
 
 @raises(Exception)
 def test_invalid_element_type():

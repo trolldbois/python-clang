@@ -1692,10 +1692,7 @@ class Type(Structure):
 
     @property
     def spelling(self):
-        if not hasattr(self, '_spelling'):
-            self._spelling = conf.lib.clang_getTypeSpelling(self)
-
-        return self._spelling
+        return conf.lib.clang_getTypeSpelling(self)
 
     def __eq__(self, other):
         if type(other) != type(self):

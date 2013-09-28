@@ -1692,6 +1692,7 @@ class Type(Structure):
 
     @property
     def spelling(self):
+        """Retrieve the spelling of this Type."""
         return conf.lib.clang_getTypeSpelling(self)
 
     def __eq__(self, other):

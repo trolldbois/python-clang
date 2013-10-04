@@ -267,6 +267,7 @@ class SourceRange(Structure):
         return not self.__eq__(other)
 
     def __contains__(self, other):
+        """Useful to detect the Token/Lexer bug"""
         if not isinstance(other, SourceLocation):
             return False
         if other.file is None and self.start.file is None:
@@ -287,7 +288,7 @@ class SourceRange(Structure):
             if other.column <= self.end.column:
                 return True
         return False
-        
+
     def __repr__(self):
         return "<SourceRange start %r, end %r>" % (self.start, self.end)
 
@@ -1524,6 +1525,7 @@ TypeKind.VECTOR = TypeKind(113)
 TypeKind.INCOMPLETEARRAY = TypeKind(114)
 TypeKind.VARIABLEARRAY = TypeKind(115)
 TypeKind.DEPENDENTSIZEDARRAY = TypeKind(116)
+TypeKind.MEMBERPOINTER = TypeKind(117)
 
 class Type(Structure):
     """
@@ -1698,6 +1700,12 @@ class Type(Structure):
         Retrieve the size of the constant array.
         """
         return conf.lib.clang_getArraySize(self)
+
+    def get_class_type(self):
+        """
+        Retrieve the class type of the member pointer type.
+        """
+        return conf.lib.clang_Type_getClassType(self)
 
     def get_align(self):
         """
@@ -2735,6 +2743,11 @@ functionList = [
   ("clang_getArraySize",
    [Type],
    c_longlong),
+
+  ("clang_Type_getClassType",
+   [Type],
+   Type,
+   Type.from_result),
 
   ("clang_getFieldDeclBitWidth",
    [Cursor],

@@ -266,6 +266,28 @@ class SourceRange(Structure):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __contains__(self, other):
+        if not isinstance(other, SourceLocation):
+            return False
+        if other.file is None and self.start.file is None:
+            pass
+        elif ( self.start.file.name != other.file.name or 
+               other.file.name != self.end.file.name):
+            # same file name
+            return False
+        # same file, in between lines
+        if self.start.line < other.line < self.end.line:
+            return True
+        elif self.start.line == other.line:
+            # same file first line
+            if self.start.column <= other.column:
+                return True
+        elif other.line == self.end.line:
+            # same file last line
+            if other.column <= self.end.column:
+                return True
+        return False
+        
     def __repr__(self):
         return "<SourceRange start %r, end %r>" % (self.start, self.end)
 
@@ -409,6 +431,11 @@ class TokenGroup(object):
         This functionality is needed multiple places in this module. We define
         it here because it seems like a logical place.
         """
+        #import code
+        #if (extent and extent.start and extent.start.file and 
+        #    extent.start.file.name == '/tmp/p.cpp'):
+        #    print 'allo'
+        #    code.interact(local=locals())
         tokens_memory = POINTER(Token)()
         tokens_count = c_uint()
 

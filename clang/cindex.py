@@ -1373,6 +1373,10 @@ class Cursor(Structure):
             children)
         return iter(children)
 
+    def get_field_offsetof(self):
+        """Returns the offsetof the FIELD_DECL pointed by this Cursor."""
+        return conf.lib.clang_Cursor_getOffsetOfField(self)
+
     def get_tokens(self):
         """Obtain Token instances formulating that compose this Cursor.
 
@@ -3228,6 +3232,10 @@ functionList = [
    [Cursor],
    _CXString,
    _CXString.from_result),
+
+  ("clang_Cursor_getOffsetOfField
+   [Cursor],
+   c_longlong),
 
   ("clang_Type_getAlignOf",
    [Type],

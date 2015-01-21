@@ -18,8 +18,8 @@
 #
 
 # Tune this
-#LLVM_LOCAL_REPO=~/compil/new/llvm
-#PYTHON_CLANG_LOCAL_REPO=~/compil/new/python-clang
+LLVM_LOCAL_REPO=~/compil/new/llvm
+PYTHON_CLANG_LOCAL_REPO=~/compil/new/python-clang
 
 if [ ! -v LLVM_LOCAL_REPO -o ! -v PYTHON_CLANG_LOCAL_REPO ]; then
     echo "Please fix this script."

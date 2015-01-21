@@ -1,65 +1,127 @@
 #!/bin/bash
-
-CLANG_GIT_MIRROR_REPOSITORY_URL=https://github.com/llvm-mirror/clang.git
-
-
-PYTHON_CLANG_FOLDER=`pwd`
-
-CLANG_TMP_BASE_FOLDER=/tmp/clang_git
-CLANG_FOLDER_NAME=clang
-CLANG_GIT_MIRROR_FOLDER=$CLANG_TMP_BASE_FOLDER/$CLANG_FOLDER_NAME
-
 #
-#CLANG_GIT_MIRROR_FOLDER=/home/myuser/Desktop/clang_git
+# Because the llvm-mirror/clang repo has no stand alone repo for python
+# bindings, we have created https://github.com/trolldbois/python-clang .
+# we can them push that package to Pypi https://pypi.python.org/pypi/clang .
+# This repository really contains python setup.py and some fixes in 
+# alternate branches
+#
+# The idea of this update.sh script is 
+# Step a) to sync llvm, and the clang tool subfolder for the local repo
+#  llvm master is required to compile clang master.
+#
+# Step b) python-clang update our local repo master branch 
+#  with llvm-mirror/clang/bindings/python master files
+#
+# Step c) suggest to merge master with whatever local branch you are working on
+#
+#
+
+# Tune this
+#LLVM_LOCAL_REPO=~/compil/new/llvm
+#PYTHON_CLANG_LOCAL_REPO=~/compil/new/python-clang
+
+if [ ! -v LLVM_LOCAL_REPO -o ! -v PYTHON_CLANG_LOCAL_REPO ]; then
+    echo "Please fix this script."
+    exit 1
+fi
+
+# we do not intend to clone, push nor pull from that local repo 
+SHALLOW_GIT="--depth=10"
 
 
-if [ -d "$CLANG_GIT_MIRROR_FOLDER" ]; then
-  echo
-  cd $CLANG_GIT_MIRROR_FOLDER
-  REMOTE_REPO=`git remote -v | awk '{print $1}' | head -n 1`
-  REMOTE_REPO_URL=`git remote -v | awk '{print $2}' | head -n 1`
-  if [ "$REMOTE_REPO" == "origin" ] && [ "$REMOTE_REPO_URL" == "$CLANG_GIT_MIRROR_REPOSITORY_URL" ]; then
-      echo "#############################################"
-      echo "$CLANG_GIT_MIRROR_FOLDER folder was detected"
-      echo "It was found that there is already a local copy of the Clang source code"
-      echo "The local copy will be updated now."
-      echo "sync repro..."
-      git fetch --progress --prune origin
-      COMMIT=`git rev-parse HEAD`
-      git checkout --quiet $COMMIT
-      git update-ref refs/heads/master $COMMIT
-      git symbolic-ref HEAD refs/heads/master
-      echo "Done"
-      echo "#############################################"
-  fi
+LLVM_GIT_REPOSITORY_URL=https://github.com/llvm-mirror/llvm.git
+CLANG_GIT_REPOSITORY_URL=https://github.com/llvm-mirror/clang.git
+CLANG_LOCAL_REPO=$LLVM_LOCAL_REPO/tools/clang
 
-else
+
+CURCWD=`pwd`
+
+# get llvm if required
+if [ ! -d "$LLVM_LOCAL_REPO" ]; then
     echo "#############################################"
-    echo "Cloning Clang repo from $CLANG_GIT_MIRROR_REPOSITORY_URL"
-    mkdir -p $CLANG_TMP_BASE_FOLDER
-    git clone --recursive -b master --single-branch $CLANG_GIT_MIRROR_REPOSITORY_URL $CLANG_GIT_MIRROR_FOLDER
-    echo "Done"
-    cd $CLANG_GIT_MIRROR_FOLDER
+    echo "Cloning LLVM repo from $LLVM_GIT_REPOSITORY_URL"
+    mkdir -p $LLVM_LOCAL_REPO
+    echo git clone --recursive -b master --single-branch $SHALLOW_GIT $LLVM_GIT_REPOSITORY_URL $LLVM_LOCAL_REPO
+    git clone --recursive -b master --single-branch $SHALLOW_GIT $LLVM_GIT_REPOSITORY_URL $LLVM_LOCAL_REPO
+    if [ $? -ne 0 ]; then
+        echo "Error while clone-ing llvm master - Aborting"
+        exit 1
+    fi
+    echo "#############################################"
+else
+    # otherwise sync it
+    echo "#############################################"
+    echo "updating llvm local repository"
+    cd $LLVM_LOCAL_REPO
+    git checkout master
+    if [ $? -ne 0 ]; then
+        echo "Error while checking out llvm master - Aborting"
+        exit 1
+    fi
+    echo "git pull $LLVM_GIT_REPOSITORY_URL master"
+    git pull $LLVM_GIT_REPOSITORY_URL master
+    if [ $? -ne 0 ]; then
+        echo "Error while pull-ing llvm master - Aborting"
+        exit 1
+    fi
     echo "#############################################"
 fi
 
+cd $CURCWD
 
+# get clang in llvm tools folder if required
+if [ ! -d "$CLANG_LOCAL_REPO" ]; then
+    echo "#############################################"
+    echo "Cloning CLANG repo from $CLANG_GIT_REPOSITORY_URL"
+    mkdir -p $CLANG_LOCAL_REPO
+    echo git clone --recursive -b master --single-branch $SHALLOW_GIT $CLANG_GIT_REPOSITORY_URL $CLANG_LOCAL_REPO
+    git clone --recursive -b master --single-branch $SHALLOW_GIT $CLANG_GIT_REPOSITORY_URL $CLANG_LOCAL_REPO
+    if [ $? -ne 0 ]; then
+        echo "Error while clone-ing clang master - Aborting"
+        exit 1
+    fi
+    echo "#############################################"
+else
+    # otherwise sync it
+    echo "#############################################"
+    echo "updating clang local repository"
+    cd $CLANG_LOCAL_REPO
+    git checkout master
+    if [ $? -ne 0 ]; then
+        echo "Error while checking out clang master - Aborting"
+        exit 1
+    fi
+    echo "git pull $CLANG_GIT_REPOSITORY_URL master"
+    git pull $CLANG_GIT_REPOSITORY_URL master
+    if [ $? -ne 0 ]; then
+        echo "Error while pull-ing clang master - Aborting"
+        exit 1
+    fi
+    echo "#############################################"
+fi
+
+# prepping the commit log for python-clang
+cd $CLANG_LOCAL_REPO
 COMMIT=`git rev-parse HEAD`
 
-cd $PYTHON_CLANG_FOLDER
-
+cd $PYTHON_CLANG_LOCAL_REPO
 git checkout master
+if [ $? -ne 0 ]; then
+    echo "** Error while switching to python-clang master branch - Aborting"
+    exit 1
+fi
 
 echo "Removing old files..."
-rm -rf $PYTHON_CLANG_FOLDER/clang
-rm -rf $PYTHON_CLANG_FOLDER/examples
-rm -rf $PYTHON_CLANG_FOLDER/tests
+rm -rf $PYTHON_CLANG_LOCAL_REPO/clang
+rm -rf $PYTHON_CLANG_LOCAL_REPO/examples
+rm -rf $PYTHON_CLANG_LOCAL_REPO/tests
 
 echo ""
 echo "Copying new files"
-cp -a $CLANG_GIT_MIRROR_FOLDER/bindings/python/clang $PYTHON_CLANG_FOLDER/
-cp -a $CLANG_GIT_MIRROR_FOLDER/bindings/python/examples $PYTHON_CLANG_FOLDER/
-cp -a $CLANG_GIT_MIRROR_FOLDER/bindings/python/tests $PYTHON_CLANG_FOLDER/
+cp -a $CLANG_LOCAL_REPO/bindings/python/clang $PYTHON_CLANG_LOCAL_REPO/
+cp -a $CLANG_LOCAL_REPO/bindings/python/examples $PYTHON_CLANG_LOCAL_REPO/
+cp -a $CLANG_LOCAL_REPO/bindings/python/tests $PYTHON_CLANG_LOCAL_REPO/
 
 git add clang examples tests -v
 git commit -m "updated from https://github.com/llvm-mirror/clang.git - Last commit llvm-mirror/clang/commit/$COMMIT"

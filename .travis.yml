@@ -1,0 +1,52 @@
+# .travis.yml for python-clang
+
+language: python
+
+python:
+  - "2.7"
+# python-clang is Python2 only
+#  - "3.4"
+
+
+install:
+# travis-ci use Ubuntu 12.04.5 LTS (Precise Pangolin) 64bit
+# install libclang1-3.4 libclang-common-3.4-dev
+  - sudo apt-add-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.4 main" --yes
+  - sudo apt-add-repository "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu precise main"  --yes
+  - sudo apt-get update 
+  - sudo apt-get install libclang1-3.4 libclang-common-3.4-dev  --yes --force-yes
+  - sudo echo `echo "/usr/lib/llvm-3.4/lib/" >> /etc/ld.so.conf.d/llvm-dev.conf`
+
+# Fixes libclang installation because libclang is named in Ubuntu 12.04 to 14.10 as libclang.so.1, 
+# however python-clang expects the library is named libclang.so
+# libclang.so is hardcoded in https://github.com/trolldbois/python-clang/blob/master/clang/cindex.py#L3361
+  - sudo ln -v -s /usr/lib/x86_64-linux-gnu/libclang.so.1 /usr/lib/x86_64-linux-gnu/libclang.so
+
+# tests dependencies
+#  - pip install nose
+
+script:
+# uncomment the following lines to test update.sh script with a old Clang source code copy
+#  - CURRENT=`pwd`
+#  - git config --global user.email "fake@fake.fake"
+#  - git config --global user.name "Fake User"
+#  - git config --global push.default simple
+#  - mkdir -p /tmp/clang_git/
+#  - cd /tmp/clang_git
+#  - git clone --recursive https://github.com/llvm-mirror/clang.git clang
+#  - cd /tmp/clang_git/clang
+#  - git reset --hard 017669cb0ce9a0a58cb2ce7fc72dfad228ed3c19
+#  - cd $CURRENT
+#  - bash update.sh
+
+# run tests
+  - python setup.py test
+
+#after_success:
+#  coveralls
+
+# disable email notifications
+notifications:
+  email:
+    on_success: never
+    on_failure: never

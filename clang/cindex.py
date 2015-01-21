@@ -3233,7 +3233,7 @@ functionList = [
    _CXString,
    _CXString.from_result),
 
-  ("clang_Cursor_getOffsetOfField
+  ("clang_Cursor_getOffsetOfField",
    [Cursor],
    c_longlong),
 

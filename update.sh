@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cd ~/compil/llvm/llvm/tools/clang/bindings/
+git checkout master
 COMMIT=`git log | head -n 1`
 cd ~/compil/llvm/llvm/
 REV=`svn info | grep Revision`

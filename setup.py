@@ -25,6 +25,7 @@ setup(name="clang",
       # use pip requirements.txt instead
       # install_requires = ["libclang"],
       # build_tests_requires = ["libclang"],
+      # export LD_LIBRARY_PATH=$LLVM_LOCAL_REPO/build/Debug+Asserts/lib/
 
       # if use nose.collector, many plugins not is avaliable
       # see: http://nose.readthedocs.org/en/latest/setuptools_integration.html

@@ -16,6 +16,7 @@ install:
   - sudo apt-add-repository "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu precise main"  --yes
   - sudo apt-get update 
   - sudo apt-get install libclang1-3.7 libclang-common-3.7-dev  --yes --force-yes
+  - sudo apt-get install libclang1-3.4 libclang-common-3.4-dev  --yes --force-yes
 #permission denied  - sudo echo `echo "/usr/lib/llvm-3.7/lib/" >> /etc/ld.so.conf.d/llvm-dev.conf`
   - sudo ln -v -s /usr/lib/llvm-3.7/lib/libclang.so.1 /usr/lib/llvm-3.7/lib/libclang.so
   - sudo ln -v -s /usr/lib/x86_64-linux-gnu/libclang-3.7.so.1 /usr/lib/x86_64-linux-gnu/libclang.so.1
@@ -37,6 +38,7 @@ install:
 script:
 #  - echo $LD_LIBRARY_PATH
 #  - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/llvm-3.7/lib/
+  - ls -al /usr/lib/x86_64-linux-gnu/
   - ls -al /usr/lib/llvm-3.7/lib/
   - sudo ldconfig -p
 

@@ -28,7 +28,7 @@ install:
 
 script:
 # run tests
-#  - python setup.py test
+  - python setup.py test
   - coverage run --source=clang setup.py test
 
 after_success:

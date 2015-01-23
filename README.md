@@ -21,3 +21,5 @@ tests.cindex.test_index.test_create ... ok
 [![Build Status](https://travis-ci.org/trolldbois/python-clang.svg?branch=master)](https://travis-ci.org/trolldbois/python-clang)
 
 [![pypi](https://img.shields.io/pypi/dm/clang.svg)](https://pypi.python.org/pypi/clang)
+
+[![Coverage Status](https://coveralls.io/repos/trolldbois/python-clang/badge.svg)](https://coveralls.io/r/trolldbois/python-clang)

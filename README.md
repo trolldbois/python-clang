@@ -18,4 +18,6 @@ $ env PYTHONPATH=$(echo ~/llvm/tools/clang/bindings/python/) \
 tests.cindex.test_index.test_create ... ok
 ...
 
-+[![Build Status](https://travis-ci.org/trolldbois/python-clang.svg?branch=master)](https://travis-ci.org/trolldbois/python-clang)
+[![Build Status](https://travis-ci.org/trolldbois/python-clang.svg?branch=master)](https://travis-ci.org/trolldbois/python-clang)
+
+[![pypi](https://img.shields.io/pypi/dm/clang.svg)](https://pypi.python.org/pypi/clang)

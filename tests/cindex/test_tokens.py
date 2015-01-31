@@ -6,7 +6,7 @@ from clang.cindex import TokenKind
 from nose.tools import eq_
 from nose.tools import ok_
 
-from .util import get_tu, get_cursor
+from .util import get_tu
 
 def test_token_to_cursor():
     """Ensure we can obtain a Cursor from a Token instance."""
@@ -42,24 +42,6 @@ def test_token_extent():
     tu = get_tu('int foo = 10;')
     r = tu.get_extent('t.c', (0, 11))
 
-    tokens = list(tu.get_tokens(extent=r))
-    eq_(len(tokens), 4)
-
-    extent = tokens[1].extent
-    ok_(isinstance(extent, SourceRange))
-
-    eq_(extent.start.offset, 4)
-    eq_(extent.end.offset, 7)
-
-def test_token_define():
-    """Ensure Token.extent works."""
-    tu = get_tu('''
-    #define PLOP
-    extern int foo = 10;
-    ''')
-    r = tu.get_extent('t.c', (0, 11))
-    import code
-    code.interact(local=locals())
     tokens = list(tu.get_tokens(extent=r))
     eq_(len(tokens), 4)
 

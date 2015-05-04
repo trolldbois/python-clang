@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/trolldbois/python-clang.svg?branch=master)](https://travis-ci.org/trolldbois/python-clang)
+[![pypi](https://img.shields.io/pypi/dm/clang.svg)](https://pypi.python.org/pypi/clang)
+[![Coverage Status](https://coveralls.io/repos/trolldbois/python-clang/badge.svg)](https://coveralls.io/r/trolldbois/python-clang)
+
 //===----------------------------------------------------------------------===//
 // Clang Python Bindings
 //===----------------------------------------------------------------------===//
@@ -5,7 +9,8 @@
 This is the python bindings subdir of llvm clang repository.
 https://github.com/llvm-mirror/clang/tree/master/bindings/python
 
-This is a fork. Mainly for Pypi packaging purposes.
+This is a non-official fork. Mainly for Pypi packaging purposes.
+The pypi package is not official either.
 
 Test:
 -----
@@ -18,8 +23,4 @@ $ env PYTHONPATH=$(echo ~/llvm/tools/clang/bindings/python/) \
 tests.cindex.test_index.test_create ... ok
 ...
 
-[![Build Status](https://travis-ci.org/trolldbois/python-clang.svg?branch=master)](https://travis-ci.org/trolldbois/python-clang)
 
-[![pypi](https://img.shields.io/pypi/dm/clang.svg)](https://pypi.python.org/pypi/clang)
-
-[![Coverage Status](https://coveralls.io/repos/trolldbois/python-clang/badge.svg)](https://coveralls.io/r/trolldbois/python-clang)

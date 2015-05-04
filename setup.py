@@ -4,9 +4,9 @@
 from setuptools import setup
 
 setup(name="clang",
-      version="3.7.dev234762",
+      version="3.7.dev234765",
       description="libclang python bindings",
-      long_description=open("README.md").read(),
+      long_description=open("README.txt").read(),
       url="https://github.com/trolldbois/python-clang",
       download_url="https://github.com/trolldbois/python-clang/releases",
       license="License :: OSI Approved :: University of Illinois/NCSA Open Source License",

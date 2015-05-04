@@ -2,6 +2,12 @@
 [![pypi](https://img.shields.io/pypi/dm/clang.svg)](https://pypi.python.org/pypi/clang)
 [![Coverage Status](https://coveralls.io/repos/trolldbois/python-clang/badge.svg)](https://coveralls.io/r/trolldbois/python-clang)
 
+
+
+
+OBSOLETE. LLVM-CLANG NOW PUBLISHES PYTHON PACKAGE.
+JUST ADD THE OFFICIAL llvm-3.7 repo in your apt.
+
 //===----------------------------------------------------------------------===//
 // Clang Python Bindings
 //===----------------------------------------------------------------------===//

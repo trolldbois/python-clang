@@ -4,3 +4,5 @@ clang.egg-info/
 dist/
 build/
 *.pyc
+.tox
+.eggs

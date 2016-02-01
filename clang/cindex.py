@@ -180,8 +180,9 @@ class SourceLocation(Structure):
     def _get_instantiation(self):
         if self._data is None:
             f, l, c, o = c_object_p(), c_uint(), c_uint(), c_uint()
-            conf.lib.clang_getInstantiationLocation(self, byref(f), byref(l),
-                    byref(c), byref(o))
+            conf.lib.clang_getInstantiationLocation(
+                self, byref(f), byref(l), byref(c), byref(o)
+            )
             if f:
                 f = File(f)
             else:
@@ -286,8 +287,8 @@ class SourceRange(Structure):
             return False
         if other.file is None and self.start.file is None:
             pass
-        elif (self.start.file.name != other.file.name or
-               other.file.name != self.end.file.name):
+        elif (self.start.file.name != other.file.name
+                or other.file.name != self.end.file.name):
             # same file name
             return False
         # same file, in between lines
@@ -365,8 +366,9 @@ class Diagnostic(object):
 
             def __getitem__(self, key):
                 range = SourceRange()
-                value = conf.lib.clang_getDiagnosticFixIt(self.diag, key,
-                        byref(range))
+                value = conf.lib.clang_getDiagnosticFixIt(
+                    self.diag, key, byref(range)
+                )
                 if len(value) == 0:
                     raise IndexError
 
@@ -399,7 +401,8 @@ class Diagnostic(object):
 
     def __repr__(self):
         return "<Diagnostic severity %r, location %r, spelling %r>" % (
-            self.severity, self.location, self.spelling)
+            self.severity, self.location, self.spelling
+        )
 
     def from_param(self):
         return self.ptr
@@ -452,8 +455,9 @@ class TokenGroup(object):
         tokens_memory = POINTER(Token)()
         tokens_count = c_uint()
 
-        conf.lib.clang_tokenize(tu, extent, byref(tokens_memory),
-                byref(tokens_count))
+        conf.lib.clang_tokenize(
+            tu, extent, byref(tokens_memory), byref(tokens_count)
+        )
 
         count = int(tokens_count.value)
 
@@ -533,7 +537,8 @@ class BaseEnumeration(object):
             self.__class__._kinds += [None] * (value - len(self.__class__._kinds) + 1)
         if self.__class__._kinds[value] is not None:
             raise ValueError('{0} value {1} already loaded'.format(
-                str(self.__class__), value))
+                str(self.__class__), value)
+            )
         self.value = value
         self.__class__._kinds[value] = self
         self.__class__._name_map = None
@@ -1166,7 +1171,11 @@ class Cursor(Structure):
     The Cursor class represents a reference to an element within the AST. It
     acts as a kind of iterator.
     """
-    _fields_ = [("_kind_id", c_int), ("xdata", c_int), ("data", c_void_p * 3)]
+    _fields_ = [
+        ("_kind_id", c_int),
+        ("xdata", c_int),
+        ("data", c_void_p * 3)
+    ]
 
     @staticmethod
     def from_location(tu, location):
@@ -1506,8 +1515,9 @@ class Cursor(Structure):
             children.append(child)
             return 1  # continue
         children = []
-        conf.lib.clang_visitChildren(self, callbacks['cursor_visit'](visitor),
-            children)
+        conf.lib.clang_visitChildren(
+            self, callbacks['cursor_visit'](visitor), children
+        )
         return iter(children)
 
     def walk_preorder(self):
@@ -1626,6 +1636,7 @@ class StorageClass(object):
     def __repr__(self):
         return 'StorageClass.%s' % (self.name,)
 
+
 StorageClass.INVALID = StorageClass(0)
 StorageClass.NONE = StorageClass(1)
 StorageClass.EXTERN = StorageClass(2)
@@ -1653,6 +1664,7 @@ class AccessSpecifier(BaseEnumeration):
     def __repr__(self):
         return 'AccessSpecifier.%s' % (self.name,)
 
+
 AccessSpecifier.INVALID = AccessSpecifier(0)
 AccessSpecifier.PUBLIC = AccessSpecifier(1)
 AccessSpecifier.PROTECTED = AccessSpecifier(2)
@@ -1678,6 +1690,7 @@ class TypeKind(BaseEnumeration):
 
     def __repr__(self):
         return 'TypeKind.%s' % (self.name,)
+
 
 TypeKind.INVALID = TypeKind(0)
 TypeKind.UNEXPOSED = TypeKind(1)
@@ -1743,6 +1756,7 @@ class RefQualifierKind(BaseEnumeration):
     def __repr__(self):
         return 'RefQualifierKind.%s' % (self.name,)
 
+
 RefQualifierKind.NONE = RefQualifierKind(0)
 RefQualifierKind.LVALUE = RefQualifierKind(1)
 RefQualifierKind.RVALUE = RefQualifierKind(2)
@@ -1785,8 +1799,9 @@ class Type(Structure):
                     raise IndexError("Only non-negative indexes are accepted.")
 
                 if key >= len(self):
-                    raise IndexError("Index greater than container length: "
-                                     "%d > %d" % (key, len(self)))
+                    raise IndexError(
+                        "Index greater than container length: %d > %d" % (key, len(self))
+                    )
 
                 result = conf.lib.clang_getArgType(self.parent, key)
                 if result.kind == TypeKind.INVALID:
@@ -1944,7 +1959,9 @@ class Type(Structure):
         """
         Retrieve the offset of a field in the record.
         """
-        return conf.lib.clang_Type_getOffsetOf(self, c_char_p(fieldname.encode('utf-8')))
+        return conf.lib.clang_Type_getOffsetOf(
+            self, c_char_p(fieldname.encode('utf-8'))
+        )
 
     def get_ref_qualifier(self):
         """
@@ -1964,8 +1981,9 @@ class Type(Structure):
             fields.append(field)
             return 1  # continue
         fields = []
-        conf.lib.clang_Type_visitFields(self,
-                            callbacks['fields_visit'](visitor), fields)
+        conf.lib.clang_Type_visitFields(
+            self, callbacks['fields_visit'](visitor), fields
+        )
         return iter(fields)
 
     @property
@@ -2004,7 +2022,11 @@ class ClangObject(object):
 
 class _CXUnsavedFile(Structure):
     """Helper for passing unsaved file arguments."""
-    _fields_ = [("name", c_char_p), ("contents", c_char_p), ('length', c_ulong)]
+    _fields_ = [
+        ("name", c_char_p),
+        ("contents", c_char_p),
+        ('length', c_ulong)
+    ]
 
 # Functions calls through the python interface are rather slow. Fortunately,
 # for most symboles, we do not need to perform a function call. Their spelling
@@ -2075,8 +2097,7 @@ class CompletionChunk:
 
     @CachedProperty
     def string(self):
-        res = conf.lib.clang_getCompletionChunkCompletionString(self.cs,
-                                                                self.key)
+        res = conf.lib.clang_getCompletionChunkCompletionString(self.cs, self.key)
 
         if (res):
             return CompletionString(res)
@@ -2226,8 +2247,7 @@ class CodeCompletionResults(ClangObject):
                 self.ccr = ccr
 
             def __len__(self):
-                return int(
-                    conf.lib.clang_codeCompleteGetNumDiagnostics(self.ccr))
+                return int(conf.lib.clang_codeCompleteGetNumDiagnostics(self.ccr))
 
             def __getitem__(self, key):
                 return conf.lib.clang_codeCompleteGetDiagnostic(self.ccr, key)
@@ -2271,8 +2291,7 @@ class Index(ClangObject):
         If an error was encountered during parsing, a TranslationUnitLoadError
         will be raised.
         """
-        return TranslationUnit.from_source(path, args, unsaved_files, options,
-                                           self)
+        return TranslationUnit.from_source(path, args, unsaved_files, options, self)
 
 
 class TranslationUnit(ClangObject):
@@ -2453,8 +2472,9 @@ class TranslationUnit(ClangObject):
 
         # Automatically adapt CIndex/ctype pointers to python objects
         includes = []
-        conf.lib.clang_getInclusions(self,
-                callbacks['translation_unit_includes'](visitor), includes)
+        conf.lib.clang_getInclusions(
+            self, callbacks['translation_unit_includes'](visitor), includes
+        )
 
         return iter(includes)
 
@@ -2502,15 +2522,18 @@ class TranslationUnit(ClangObject):
         start_location, end_location = locations
 
         if hasattr(start_location, '__len__'):
-            start_location = SourceLocation.from_position(self, f,
-                start_location[0], start_location[1])
+            start_location = SourceLocation.from_position(
+                self, f, start_location[0], start_location[1]
+            )
         elif isinstance(start_location, int):
-            start_location = SourceLocation.from_offset(self, f,
-                start_location)
+            start_location = SourceLocation.from_offset(
+                self, f, start_location
+            )
 
         if hasattr(end_location, '__len__'):
-            end_location = SourceLocation.from_position(self, f,
-                end_location[0], end_location[1])
+            end_location = SourceLocation.from_position(
+                self, f, end_location[0], end_location[1]
+            )
         elif isinstance(end_location, int):
             end_location = SourceLocation.from_offset(self, f, end_location)
 
@@ -2565,8 +2588,9 @@ class TranslationUnit(ClangObject):
                 unsaved_files_array[i].name = name
                 unsaved_files_array[i].contents = value
                 unsaved_files_array[i].length = len(value)
-        conf.lib.clang_reparseTranslationUnit(self, len(unsaved_files),
-                unsaved_files_array, options)
+        conf.lib.clang_reparseTranslationUnit(
+            self, len(unsaved_files), unsaved_files_array, options
+        )
 
     def save(self, filename):
         """Saves the TranslationUnit to a file.
@@ -2584,11 +2608,13 @@ class TranslationUnit(ClangObject):
         filename -- The path to save the translation unit to.
         """
         options = conf.lib.clang_defaultSaveOptions(self)
-        result = int(conf.lib.clang_saveTranslationUnit(self, filename.encode('utf-8'),
-                                                        options))
+        result = int(
+            conf.lib.clang_saveTranslationUnit(
+                self, filename.encode('utf-8'), options
+            )
+        )
         if result != 0:
-            raise TranslationUnitSaveError(result,
-                'Error saving TranslationUnit.')
+            raise TranslationUnitSaveError(result, 'Error saving TranslationUnit.')
 
     def codeComplete(self, path, line, column, unsaved_files=None,
                      include_macros=False, include_code_patterns=False,
@@ -2801,8 +2827,7 @@ class CompilationDatabase(ClangObject):
     @staticmethod
     def from_result(res, fn, args):
         if not res:
-            raise CompilationDatabaseError(0,
-                                           "CompilationDatabase loading failed")
+            raise CompilationDatabaseError(0, "CompilationDatabase loading failed")
         return CompilationDatabase(res)
 
     @staticmethod
@@ -2814,8 +2839,10 @@ class CompilationDatabase(ClangObject):
                 buildDir.encode('utf-8'), byref(errorCode)
             )
         except CompilationDatabaseError:
-            raise CompilationDatabaseError(int(errorCode.value),
-                                           "CompilationDatabase loading failed")
+            raise CompilationDatabaseError(
+                int(errorCode.value),
+                "CompilationDatabase loading failed"
+            )
         return cdb
 
     def getCompileCommands(self, filename):
@@ -2823,8 +2850,9 @@ class CompilationDatabase(ClangObject):
         Get an iterable object providing all the CompileCommands available to
         build filename. Returns None if filename is not found in the database.
         """
-        return conf.lib.clang_CompilationDatabase_getCompileCommands(self,
-                                                                     filename.encode('utf-8'))
+        return conf.lib.clang_CompilationDatabase_getCompileCommands(
+            self, filename.encode('utf-8')
+        )
 
     def getAllCompileCommands(self):
         """
@@ -2883,651 +2911,804 @@ class Token(Structure):
 # Now comes the plumbing to hook up the C library.
 
 # Register callback types in common container.
-callbacks['translation_unit_includes'] = CFUNCTYPE(None, c_object_p,
-        POINTER(SourceLocation), c_uint, py_object)
+callbacks['translation_unit_includes'] = CFUNCTYPE(
+    None, c_object_p, POINTER(SourceLocation), c_uint, py_object
+)
 callbacks['cursor_visit'] = CFUNCTYPE(c_int, Cursor, Cursor, py_object)
 callbacks['fields_visit'] = CFUNCTYPE(c_int, Cursor, py_object)
 
 # Functions strictly alphabetical order.
 functionList = [
-  ("clang_annotateTokens",
-   [TranslationUnit, POINTER(Token), c_uint, POINTER(Cursor)]),
-
-  ("clang_CompilationDatabase_dispose",
-   [c_object_p]),
-
-  ("clang_CompilationDatabase_fromDirectory",
-   [c_char_p, POINTER(c_uint)],
-   c_object_p,
-   CompilationDatabase.from_result),
-
-  ("clang_CompilationDatabase_getAllCompileCommands",
-   [c_object_p],
-   c_object_p,
-   CompileCommands.from_result),
-
-  ("clang_CompilationDatabase_getCompileCommands",
-   [c_object_p, c_char_p],
-   c_object_p,
-   CompileCommands.from_result),
-
-  ("clang_CompileCommands_dispose",
-   [c_object_p]),
-
-  ("clang_CompileCommands_getCommand",
-   [c_object_p, c_uint],
-   c_object_p),
-
-  ("clang_CompileCommands_getSize",
-   [c_object_p],
-   c_uint),
-
-  ("clang_CompileCommand_getArg",
-   [c_object_p, c_uint],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_CompileCommand_getDirectory",
-   [c_object_p],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_CompileCommand_getNumArgs",
-   [c_object_p],
-   c_uint),
-
-  ("clang_codeCompleteAt",
-   [TranslationUnit, c_char_p, c_int, c_int, c_void_p, c_int, c_int],
-   POINTER(CCRStructure)),
-
-  ("clang_codeCompleteGetDiagnostic",
-   [CodeCompletionResults, c_int],
-   Diagnostic),
-
-  ("clang_codeCompleteGetNumDiagnostics",
-   [CodeCompletionResults],
-   c_int),
-
-  ("clang_createIndex",
-   [c_int, c_int],
-   c_object_p),
-
-  ("clang_createTranslationUnit",
-   [Index, c_char_p],
-   c_object_p),
-
-  ("clang_CXXField_isMutable",
-   [Cursor],
-   bool),
-
-  ("clang_CXXMethod_isConst",
-   [Cursor],
-   bool),
-
-  ("clang_CXXMethod_isPureVirtual",
-   [Cursor],
-   bool),
-
-  ("clang_CXXMethod_isStatic",
-   [Cursor],
-   bool),
-
-  ("clang_CXXMethod_isVirtual",
-   [Cursor],
-   bool),
-
-  ("clang_defaultSaveOptions",
-   [TranslationUnit],
-   c_uint),
-
-  ("clang_disposeCodeCompleteResults",
-   [CodeCompletionResults]),
-
-# ("clang_disposeCXTUResourceUsage",
-#  [CXTUResourceUsage]),
-
-  ("clang_disposeDiagnostic",
-   [Diagnostic]),
-
-  ("clang_disposeIndex",
-   [Index]),
-
-  ("clang_disposeString",
-   [_CXString]),
-
-  ("clang_disposeTokens",
-   [TranslationUnit, POINTER(Token), c_uint]),
-
-  ("clang_disposeTranslationUnit",
-   [TranslationUnit]),
-
-  ("clang_equalCursors",
-   [Cursor, Cursor],
-   bool),
-
-  ("clang_equalLocations",
-   [SourceLocation, SourceLocation],
-   bool),
-
-  ("clang_equalRanges",
-   [SourceRange, SourceRange],
-   bool),
-
-  ("clang_equalTypes",
-   [Type, Type],
-   bool),
-
-  ("clang_getArgType",
-   [Type, c_uint],
-   Type,
-   Type.from_result),
-
-  ("clang_getArrayElementType",
-   [Type],
-   Type,
-   Type.from_result),
-
-  ("clang_getArraySize",
-   [Type],
-   c_longlong),
-
-  ("clang_getFieldDeclBitWidth",
-   [Cursor],
-   c_int),
-
-  ("clang_getCanonicalCursor",
-   [Cursor],
-   Cursor,
-   Cursor.from_cursor_result),
-
-  ("clang_getCanonicalType",
-   [Type],
-   Type,
-   Type.from_result),
-
-  ("clang_getCompletionAvailability",
-   [c_void_p],
-   c_int),
-
-  ("clang_getCompletionBriefComment",
-   [c_void_p],
-   _CXString),
-
-  ("clang_getCompletionChunkCompletionString",
-   [c_void_p, c_int],
-   c_object_p),
-
-  ("clang_getCompletionChunkKind",
-   [c_void_p, c_int],
-   c_int),
-
-  ("clang_getCompletionChunkText",
-   [c_void_p, c_int],
-   _CXString),
-
-  ("clang_getCompletionPriority",
-   [c_void_p],
-   c_int),
-
-  ("clang_getCString",
-   [_CXString],
-   c_char_p),
-
-  ("clang_getCursor",
-   [TranslationUnit, SourceLocation],
-   Cursor),
-
-  ("clang_getCursorDefinition",
-   [Cursor],
-   Cursor,
-   Cursor.from_result),
-
-  ("clang_getCursorDisplayName",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getCursorExtent",
-   [Cursor],
-   SourceRange),
-
-  ("clang_getCursorLexicalParent",
-   [Cursor],
-   Cursor,
-   Cursor.from_cursor_result),
-
-  ("clang_getCursorLocation",
-   [Cursor],
-   SourceLocation),
-
-  ("clang_getCursorReferenced",
-   [Cursor],
-   Cursor,
-   Cursor.from_result),
-
-  ("clang_getCursorReferenceNameRange",
-   [Cursor, c_uint, c_uint],
-   SourceRange),
-
-  ("clang_getCursorSemanticParent",
-   [Cursor],
-   Cursor,
-   Cursor.from_cursor_result),
-
-  ("clang_getCursorSpelling",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getCursorType",
-   [Cursor],
-   Type,
-   Type.from_result),
-
-  ("clang_getCursorUSR",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_Cursor_getMangling",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-# ("clang_getCXTUResourceUsage",
-#  [TranslationUnit],
-#  CXTUResourceUsage),
-
-  ("clang_getCXXAccessSpecifier",
-   [Cursor],
-   c_uint),
-
-  ("clang_getDeclObjCTypeEncoding",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getDiagnostic",
-   [c_object_p, c_uint],
-   c_object_p),
-
-  ("clang_getDiagnosticCategory",
-   [Diagnostic],
-   c_uint),
-
-  ("clang_getDiagnosticCategoryText",
-   [Diagnostic],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getDiagnosticFixIt",
-   [Diagnostic, c_uint, POINTER(SourceRange)],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getDiagnosticLocation",
-   [Diagnostic],
-   SourceLocation),
-
-  ("clang_getDiagnosticNumFixIts",
-   [Diagnostic],
-   c_uint),
-
-  ("clang_getDiagnosticNumRanges",
-   [Diagnostic],
-   c_uint),
-
-  ("clang_getDiagnosticOption",
-   [Diagnostic, POINTER(_CXString)],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getDiagnosticRange",
-   [Diagnostic, c_uint],
-   SourceRange),
-
-  ("clang_getDiagnosticSeverity",
-   [Diagnostic],
-   c_int),
-
-  ("clang_getDiagnosticSpelling",
-   [Diagnostic],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getElementType",
-   [Type],
-   Type,
-   Type.from_result),
-
-  ("clang_getEnumConstantDeclUnsignedValue",
-   [Cursor],
-   c_ulonglong),
-
-  ("clang_getEnumConstantDeclValue",
-   [Cursor],
-   c_longlong),
-
-  ("clang_getEnumDeclIntegerType",
-   [Cursor],
-   Type,
-   Type.from_result),
-
-  ("clang_getFile",
-   [TranslationUnit, c_char_p],
-   c_object_p),
-
-  ("clang_getFileName",
-   [File],
-   _CXString),  # TODO go through _CXString.from_result?
-
-  ("clang_getFileTime",
-   [File],
-   c_uint),
-
-  ("clang_getIBOutletCollectionType",
-   [Cursor],
-   Type,
-   Type.from_result),
-
-  ("clang_getIncludedFile",
-   [Cursor],
-   File,
-   File.from_cursor_result),
-
-  ("clang_getInclusions",
-   [TranslationUnit, callbacks['translation_unit_includes'], py_object]),
-
-  ("clang_getInstantiationLocation",
-   [SourceLocation, POINTER(c_object_p), POINTER(c_uint), POINTER(c_uint),
-    POINTER(c_uint)]),
-
-  ("clang_getLocation",
-   [TranslationUnit, File, c_uint, c_uint],
-   SourceLocation),
-
-  ("clang_getLocationForOffset",
-   [TranslationUnit, File, c_uint],
-   SourceLocation),
-
-  ("clang_getNullCursor",
-   None,
-   Cursor),
-
-  ("clang_getNumArgTypes",
-   [Type],
-   c_uint),
-
-  ("clang_getNumCompletionChunks",
-   [c_void_p],
-   c_int),
-
-  ("clang_getNumDiagnostics",
-   [c_object_p],
-   c_uint),
-
-  ("clang_getNumElements",
-   [Type],
-   c_longlong),
-
-  ("clang_getNumOverloadedDecls",
-   [Cursor],
-   c_uint),
-
-  ("clang_getOverloadedDecl",
-   [Cursor, c_uint],
-   Cursor,
-   Cursor.from_cursor_result),
-
-  ("clang_getPointeeType",
-   [Type],
-   Type,
-   Type.from_result),
-
-  ("clang_getRange",
-   [SourceLocation, SourceLocation],
-   SourceRange),
-
-  ("clang_getRangeEnd",
-   [SourceRange],
-   SourceLocation),
-
-  ("clang_getRangeStart",
-   [SourceRange],
-   SourceLocation),
-
-  ("clang_getResultType",
-   [Type],
-   Type,
-   Type.from_result),
-
-  ("clang_getSpecializedCursorTemplate",
-   [Cursor],
-   Cursor,
-   Cursor.from_cursor_result),
-
-  ("clang_getTemplateCursorKind",
-   [Cursor],
-   c_uint),
-
-  ("clang_getTokenExtent",
-   [TranslationUnit, Token],
-   SourceRange),
-
-  ("clang_getTokenKind",
-   [Token],
-   c_uint),
-
-  ("clang_getTokenLocation",
-   [TranslationUnit, Token],
-   SourceLocation),
-
-  ("clang_getTokenSpelling",
-   [TranslationUnit, Token],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getTranslationUnitCursor",
-   [TranslationUnit],
-   Cursor,
-   Cursor.from_result),
-
-  ("clang_getTranslationUnitSpelling",
-   [TranslationUnit],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getTUResourceUsageName",
-   [c_uint],
-   c_char_p),
-
-  ("clang_getTypeDeclaration",
-   [Type],
-   Cursor,
-   Cursor.from_result),
-
-  ("clang_getTypedefDeclUnderlyingType",
-   [Cursor],
-   Type,
-   Type.from_result),
-
-  ("clang_getTypeKindSpelling",
-   [c_uint],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_getTypeSpelling",
-   [Type],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_hashCursor",
-   [Cursor],
-   c_uint),
-
-  ("clang_isAttribute",
-   [CursorKind],
-   bool),
-
-  ("clang_isConstQualifiedType",
-   [Type],
-   bool),
-
-  ("clang_isCursorDefinition",
-   [Cursor],
-   bool),
-
-  ("clang_isDeclaration",
-   [CursorKind],
-   bool),
-
-  ("clang_isExpression",
-   [CursorKind],
-   bool),
-
-  ("clang_isFileMultipleIncludeGuarded",
-   [TranslationUnit, File],
-   bool),
-
-  ("clang_isFunctionTypeVariadic",
-   [Type],
-   bool),
-
-  ("clang_isInvalid",
-   [CursorKind],
-   bool),
-
-  ("clang_isPODType",
-   [Type],
-   bool),
-
-  ("clang_isPreprocessing",
-   [CursorKind],
-   bool),
-
-  ("clang_isReference",
-   [CursorKind],
-   bool),
-
-  ("clang_isRestrictQualifiedType",
-   [Type],
-   bool),
-
-  ("clang_isStatement",
-   [CursorKind],
-   bool),
-
-  ("clang_isTranslationUnit",
-   [CursorKind],
-   bool),
-
-  ("clang_isUnexposed",
-   [CursorKind],
-   bool),
-
-  ("clang_isVirtualBase",
-   [Cursor],
-   bool),
-
-  ("clang_isVolatileQualifiedType",
-   [Type],
-   bool),
-
-  ("clang_parseTranslationUnit",
-   [Index, c_char_p, c_void_p, c_int, c_void_p, c_int, c_int],
-   c_object_p),
-
-  ("clang_reparseTranslationUnit",
-   [TranslationUnit, c_int, c_void_p, c_int],
-   c_int),
-
-  ("clang_saveTranslationUnit",
-   [TranslationUnit, c_char_p, c_uint],
-   c_int),
-
-  ("clang_tokenize",
-   [TranslationUnit, SourceRange, POINTER(POINTER(Token)), POINTER(c_uint)]),
-
-  ("clang_visitChildren",
-   [Cursor, callbacks['cursor_visit'], py_object],
-   c_uint),
-
-  ("clang_Cursor_getNumArguments",
-   [Cursor],
-   c_int),
-
-  ("clang_Cursor_getArgument",
-   [Cursor, c_uint],
-   Cursor,
-   Cursor.from_result),
-
-  ("clang_Cursor_getNumTemplateArguments",
-   [Cursor],
-   c_int),
-
-  ("clang_Cursor_getTemplateArgumentKind",
-   [Cursor, c_uint],
-   TemplateArgumentKind.from_id),
-
-  ("clang_Cursor_getTemplateArgumentType",
-   [Cursor, c_uint],
-   Type,
-   Type.from_result),
-
-  ("clang_Cursor_getTemplateArgumentValue",
-   [Cursor, c_uint],
-   c_longlong),
-
-  ("clang_Cursor_getTemplateArgumentUnsignedValue",
-   [Cursor, c_uint],
-   c_ulonglong),
-
-  ("clang_Cursor_isAnonymous",
-   [Cursor],
-   bool),
-
-  ("clang_Cursor_isBitField",
-   [Cursor],
-   bool),
-
-  ("clang_Cursor_getBriefCommentText",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_Cursor_getRawCommentText",
-   [Cursor],
-   _CXString,
-   _CXString.from_result),
-
-  ("clang_Cursor_getOffsetOfField",
-   [Cursor],
-   c_longlong),
-
-  ("clang_Type_getAlignOf",
-   [Type],
-   c_longlong),
-
-  ("clang_Type_getClassType",
-   [Type],
-   Type,
-   Type.from_result),
-
-  ("clang_Type_getOffsetOf",
-   [Type, c_char_p],
-   c_longlong),
-
-  ("clang_Type_getSizeOf",
-   [Type],
-   c_longlong),
-
-  ("clang_Type_getCXXRefQualifier",
-   [Type],
-   c_uint),
-
-  ("clang_Type_visitFields",
-   [Type, callbacks['fields_visit'], py_object],
-   c_uint),
+    (
+        "clang_annotateTokens",
+        [TranslationUnit, POINTER(Token), c_uint, POINTER(Cursor)]
+    ),
+    (
+        "clang_CompilationDatabase_dispose",
+        [c_object_p]
+    ),
+    (
+        "clang_CompilationDatabase_fromDirectory",
+        [c_char_p, POINTER(c_uint)],
+        c_object_p,
+        CompilationDatabase.from_result
+    ),
+    (
+        "clang_CompilationDatabase_getAllCompileCommands",
+        [c_object_p],
+        c_object_p,
+        CompileCommands.from_result
+    ),
+    (
+        "clang_CompilationDatabase_getCompileCommands",
+        [c_object_p, c_char_p],
+        c_object_p,
+        CompileCommands.from_result
+    ),
+    (
+        "clang_CompileCommands_dispose",
+        [c_object_p]
+    ),
+    (
+        "clang_CompileCommands_getCommand",
+        [c_object_p, c_uint],
+        c_object_p
+    ),
+    (
+        "clang_CompileCommands_getSize",
+        [c_object_p],
+        c_uint
+    ),
+    (
+        "clang_CompileCommand_getArg",
+        [c_object_p, c_uint],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_CompileCommand_getDirectory",
+        [c_object_p],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_CompileCommand_getNumArgs",
+        [c_object_p],
+        c_uint
+    ),
+    (
+        "clang_codeCompleteAt",
+        [TranslationUnit, c_char_p, c_int, c_int, c_void_p, c_int, c_int],
+        POINTER(CCRStructure)
+    ),
+    (
+        "clang_codeCompleteGetDiagnostic",
+        [CodeCompletionResults, c_int],
+        Diagnostic
+    ),
+    (
+        "clang_codeCompleteGetNumDiagnostics",
+        [CodeCompletionResults],
+        c_int
+    ),
+    (
+        "clang_createIndex",
+        [c_int, c_int],
+        c_object_p
+    ),
+    (
+        "clang_createTranslationUnit",
+        [Index, c_char_p],
+        c_object_p
+    ),
+    (
+        "clang_CXXField_isMutable",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_CXXMethod_isConst",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_CXXMethod_isPureVirtual",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_CXXMethod_isStatic",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_CXXMethod_isVirtual",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_defaultSaveOptions",
+        [TranslationUnit],
+        c_uint
+    ),
+    (
+        "clang_disposeCodeCompleteResults",
+        [CodeCompletionResults]
+    ),
+    # (
+    #     "clang_disposeCXTUResourceUsage",
+    #     [CXTUResourceUsage]
+    # ),
+    (
+        "clang_disposeDiagnostic",
+        [Diagnostic]
+    ),
+    (
+        "clang_disposeIndex",
+        [Index]
+    ),
+    (
+        "clang_disposeString",
+        [_CXString]
+    ),
+    (
+        "clang_disposeTokens",
+        [TranslationUnit, POINTER(Token), c_uint]
+    ),
+    (
+        "clang_disposeTranslationUnit",
+        [TranslationUnit]
+    ),
+    (
+        "clang_equalCursors",
+        [Cursor, Cursor],
+        bool
+    ),
+    (
+        "clang_equalLocations",
+        [SourceLocation, SourceLocation],
+        bool
+    ),
+    (
+        "clang_equalRanges",
+        [SourceRange, SourceRange],
+        bool
+    ),
+    (
+        "clang_equalTypes",
+        [Type, Type],
+        bool
+    ),
+    (
+        "clang_getArgType",
+        [Type, c_uint],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getArrayElementType",
+        [Type],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getArraySize",
+        [Type],
+        c_longlong
+    ),
+    (
+        "clang_getFieldDeclBitWidth",
+        [Cursor],
+        c_int
+    ),
+    (
+        "clang_getCanonicalCursor",
+        [Cursor],
+        Cursor,
+        Cursor.from_cursor_result
+    ),
+    (
+        "clang_getCanonicalType",
+        [Type],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getCompletionAvailability",
+        [c_void_p],
+        c_int
+    ),
+    (
+        "clang_getCompletionBriefComment",
+        [c_void_p],
+        _CXString
+    ),
+    (
+        "clang_getCompletionChunkCompletionString",
+        [c_void_p, c_int],
+        c_object_p
+    ),
+    (
+        "clang_getCompletionChunkKind",
+        [c_void_p, c_int],
+        c_int
+    ),
+    (
+        "clang_getCompletionChunkText",
+        [c_void_p, c_int],
+        _CXString
+    ),
+    (
+        "clang_getCompletionPriority",
+        [c_void_p],
+        c_int
+    ),
+    (
+        "clang_getCString",
+        [_CXString],
+        c_char_p
+    ),
+    (
+        "clang_getCursor",
+        [TranslationUnit, SourceLocation],
+        Cursor
+    ),
+    (
+        "clang_getCursorDefinition",
+        [Cursor],
+        Cursor,
+        Cursor.from_result
+    ),
+    (
+        "clang_getCursorDisplayName",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getCursorExtent",
+        [Cursor],
+        SourceRange
+    ),
+    (
+        "clang_getCursorLexicalParent",
+        [Cursor],
+        Cursor,
+        Cursor.from_cursor_result
+    ),
+    (
+        "clang_getCursorLocation",
+        [Cursor],
+        SourceLocation
+    ),
+    (
+        "clang_getCursorReferenced",
+        [Cursor],
+        Cursor,
+        Cursor.from_result
+    ),
+    (
+        "clang_getCursorReferenceNameRange",
+        [Cursor, c_uint, c_uint],
+        SourceRange
+    ),
+    (
+        "clang_getCursorSemanticParent",
+        [Cursor],
+        Cursor,
+        Cursor.from_cursor_result
+    ),
+    (
+        "clang_getCursorSpelling",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getCursorType",
+        [Cursor],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getCursorUSR",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_Cursor_getMangling",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    # (
+    #     "clang_getCXTUResourceUsage",
+    #     [TranslationUnit],
+    #     CXTUResourceUsage
+    # ),
+    (
+        "clang_getCXXAccessSpecifier",
+        [Cursor],
+        c_uint
+    ),
+    (
+        "clang_getDeclObjCTypeEncoding",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getDiagnostic",
+        [c_object_p, c_uint],
+        c_object_p
+    ),
+    (
+        "clang_getDiagnosticCategory",
+        [Diagnostic],
+        c_uint
+    ),
+    (
+        "clang_getDiagnosticCategoryText",
+        [Diagnostic],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getDiagnosticFixIt",
+        [Diagnostic, c_uint, POINTER(SourceRange)],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getDiagnosticLocation",
+        [Diagnostic],
+        SourceLocation
+    ),
+    (
+        "clang_getDiagnosticNumFixIts",
+        [Diagnostic],
+        c_uint
+    ),
+    (
+        "clang_getDiagnosticNumRanges",
+        [Diagnostic],
+        c_uint
+    ),
+    (
+        "clang_getDiagnosticOption",
+        [Diagnostic, POINTER(_CXString)],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getDiagnosticRange",
+        [Diagnostic, c_uint],
+        SourceRange
+    ),
+    (
+        "clang_getDiagnosticSeverity",
+        [Diagnostic],
+        c_int
+    ),
+    (
+        "clang_getDiagnosticSpelling",
+        [Diagnostic],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getElementType",
+        [Type],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getEnumConstantDeclUnsignedValue",
+        [Cursor],
+        c_ulonglong
+    ),
+    (
+        "clang_getEnumConstantDeclValue",
+        [Cursor],
+        c_longlong
+    ),
+    (
+        "clang_getEnumDeclIntegerType",
+        [Cursor],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getFile",
+        [TranslationUnit, c_char_p],
+        c_object_p
+    ),
+    (
+        "clang_getFileName",
+        [File],
+        _CXString  # TODO go through _CXString.from_result?
+    ),
+    (
+        "clang_getFileTime",
+        [File],
+        c_uint
+    ),
+    (
+        "clang_getIBOutletCollectionType",
+        [Cursor],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getIncludedFile",
+        [Cursor],
+        File,
+        File.from_cursor_result
+    ),
+    (
+        "clang_getInclusions",
+        [TranslationUnit, callbacks['translation_unit_includes'], py_object]
+    ),
+    (
+        "clang_getInstantiationLocation",
+        [SourceLocation, POINTER(c_object_p), POINTER(c_uint), POINTER(c_uint), POINTER(c_uint)]
+    ),
+    (
+        "clang_getLocation",
+        [TranslationUnit, File, c_uint, c_uint],
+        SourceLocation
+    ),
+    (
+        "clang_getLocationForOffset",
+        [TranslationUnit, File, c_uint],
+        SourceLocation
+    ),
+    (
+        "clang_getNullCursor",
+        None,
+        Cursor
+    ),
+    (
+        "clang_getNumArgTypes",
+        [Type],
+        c_uint
+    ),
+    (
+        "clang_getNumCompletionChunks",
+        [c_void_p],
+        c_int
+    ),
+    (
+        "clang_getNumDiagnostics",
+        [c_object_p],
+        c_uint
+    ),
+    (
+        "clang_getNumElements",
+        [Type],
+        c_longlong
+    ),
+    (
+        "clang_getNumOverloadedDecls",
+        [Cursor],
+        c_uint
+    ),
+    (
+        "clang_getOverloadedDecl",
+        [Cursor, c_uint],
+        Cursor,
+        Cursor.from_cursor_result
+    ),
+    (
+        "clang_getPointeeType",
+        [Type],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getRange",
+        [SourceLocation, SourceLocation],
+        SourceRange
+    ),
+    (
+        "clang_getRangeEnd",
+        [SourceRange],
+        SourceLocation
+    ),
+    (
+        "clang_getRangeStart",
+        [SourceRange],
+        SourceLocation
+    ),
+    (
+        "clang_getResultType",
+        [Type],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getSpecializedCursorTemplate",
+        [Cursor],
+        Cursor,
+        Cursor.from_cursor_result
+    ),
+    (
+        "clang_getTemplateCursorKind",
+        [Cursor],
+        c_uint
+    ),
+    (
+        "clang_getTokenExtent",
+        [TranslationUnit, Token],
+        SourceRange
+    ),
+    (
+        "clang_getTokenKind",
+        [Token],
+        c_uint
+    ),
+    (
+        "clang_getTokenLocation",
+        [TranslationUnit, Token],
+        SourceLocation
+    ),
+    (
+        "clang_getTokenSpelling",
+        [TranslationUnit, Token],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getTranslationUnitCursor",
+        [TranslationUnit],
+        Cursor,
+        Cursor.from_result
+    ),
+    (
+        "clang_getTranslationUnitSpelling",
+        [TranslationUnit],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getTUResourceUsageName",
+        [c_uint],
+        c_char_p
+    ),
+    (
+        "clang_getTypeDeclaration",
+        [Type],
+        Cursor,
+        Cursor.from_result
+    ),
+    (
+        "clang_getTypedefDeclUnderlyingType",
+        [Cursor],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_getTypeKindSpelling",
+        [c_uint],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_getTypeSpelling",
+        [Type],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_hashCursor",
+        [Cursor],
+        c_uint
+    ),
+    (
+        "clang_isAttribute",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isConstQualifiedType",
+        [Type],
+        bool
+    ),
+    (
+        "clang_isCursorDefinition",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_isDeclaration",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isExpression",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isFileMultipleIncludeGuarded",
+        [TranslationUnit, File],
+        bool
+    ),
+    (
+        "clang_isFunctionTypeVariadic",
+        [Type],
+        bool
+    ),
+    (
+        "clang_isInvalid",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isPODType",
+        [Type],
+        bool
+    ),
+    (
+        "clang_isPreprocessing",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isReference",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isRestrictQualifiedType",
+        [Type],
+        bool
+    ),
+    (
+        "clang_isStatement",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isTranslationUnit",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isUnexposed",
+        [CursorKind],
+        bool
+    ),
+    (
+        "clang_isVirtualBase",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_isVolatileQualifiedType",
+        [Type],
+        bool
+    ),
+    (
+        "clang_parseTranslationUnit",
+        [Index, c_char_p, c_void_p, c_int, c_void_p, c_int, c_int],
+        c_object_p
+    ),
+    (
+        "clang_reparseTranslationUnit",
+        [TranslationUnit, c_int, c_void_p, c_int],
+        c_int
+    ),
+    (
+        "clang_saveTranslationUnit",
+        [TranslationUnit, c_char_p, c_uint],
+        c_int
+    ),
+    (
+        "clang_tokenize",
+        [TranslationUnit, SourceRange, POINTER(POINTER(Token)), POINTER(c_uint)]
+    ),
+    (
+        "clang_visitChildren",
+        [Cursor, callbacks['cursor_visit'], py_object],
+        c_uint
+    ),
+    (
+        "clang_Cursor_getNumArguments",
+        [Cursor],
+        c_int
+    ),
+    (
+        "clang_Cursor_getArgument",
+        [Cursor, c_uint],
+        Cursor,
+        Cursor.from_result
+    ),
+    (
+        "clang_Cursor_getNumTemplateArguments",
+        [Cursor],
+        c_int
+    ),
+    (
+        "clang_Cursor_getTemplateArgumentKind",
+        [Cursor, c_uint],
+        TemplateArgumentKind.from_id
+    ),
+    (
+        "clang_Cursor_getTemplateArgumentType",
+        [Cursor, c_uint],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_Cursor_getTemplateArgumentValue",
+        [Cursor, c_uint],
+        c_longlong
+    ),
+    (
+        "clang_Cursor_getTemplateArgumentUnsignedValue",
+        [Cursor, c_uint],
+        c_ulonglong
+    ),
+    (
+        "clang_Cursor_isAnonymous",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_Cursor_isBitField",
+        [Cursor],
+        bool
+    ),
+    (
+        "clang_Cursor_getBriefCommentText",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_Cursor_getRawCommentText",
+        [Cursor],
+        _CXString,
+        _CXString.from_result
+    ),
+    (
+        "clang_Cursor_getOffsetOfField",
+        [Cursor],
+        c_longlong
+    ),
+    (
+        "clang_Type_getAlignOf",
+        [Type],
+        c_longlong
+    ),
+    (
+        "clang_Type_getClassType",
+        [Type],
+        Type,
+        Type.from_result
+    ),
+    (
+        "clang_Type_getOffsetOf",
+        [Type, c_char_p],
+        c_longlong
+    ),
+    (
+        "clang_Type_getSizeOf",
+        [Type],
+        c_longlong
+    ),
+    (
+        "clang_Type_getCXXRefQualifier",
+        [Type],
+        c_uint
+    ),
+    (
+        "clang_Type_visitFields",
+        [Type, callbacks['fields_visit'], py_object],
+        c_uint
+    ),
 ]
 
 

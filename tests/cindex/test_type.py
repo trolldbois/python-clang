@@ -358,10 +358,12 @@ struct a {
     long long a4;
 };
 """
-    tries = [(['-target', 'i386-linux-gnu'], (4, 16, 0, 32, 35, 64)),
-           (['-target', 'nvptx64-unknown-unknown'], (8, 24, 0, 64, 67, 128)),
-           (['-target', 'i386-pc-win32'], (8, 16, 0, 32, 35, 64)),
-           (['-target', 'msp430-none-none'], (2, 14, 0, 32, 35, 48))]
+    tries = [
+        (['-target', 'i386-linux-gnu'], (4, 16, 0, 32, 35, 64)),
+        (['-target', 'nvptx64-unknown-unknown'], (8, 24, 0, 64, 67, 128)),
+        (['-target', 'i386-pc-win32'], (8, 16, 0, 32, 35, 64)),
+        (['-target', 'msp430-none-none'], (2, 14, 0, 32, 35, 48))
+    ]
     for flags, values in tries:
         align, total, a1, a2, a3, a4 = values
 
@@ -396,10 +398,12 @@ struct Test {
   };
   int bar;
 };"""
-    tries = [(['-target', 'i386-linux-gnu'], (4, 16, 0, 32, 64, 96)),
-           (['-target', 'nvptx64-unknown-unknown'], (8, 24, 0, 32, 64, 96)),
-           (['-target', 'i386-pc-win32'], (8, 16, 0, 32, 64, 96)),
-           (['-target', 'msp430-none-none'], (2, 14, 0, 32, 64, 96))]
+    tries = [
+        (['-target', 'i386-linux-gnu'], (4, 16, 0, 32, 64, 96)),
+        (['-target', 'nvptx64-unknown-unknown'], (8, 24, 0, 32, 64, 96)),
+        (['-target', 'i386-pc-win32'], (8, 16, 0, 32, 64, 96)),
+        (['-target', 'msp430-none-none'], (2, 14, 0, 32, 64, 96))
+    ]
     for flags, values in tries:
         align, total, f1, bariton, foo, bar = values
         tu = get_tu(source)

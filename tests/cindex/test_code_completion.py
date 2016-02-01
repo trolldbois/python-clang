@@ -26,8 +26,11 @@ void f() {
 }
 """)]
 
-    tu = TranslationUnit.from_source('fake.c', ['-std=c99'], unsaved_files=files,
-            options=TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
+    tu = TranslationUnit.from_source(
+        'fake.c', ['-std=c99'],
+        unsaved_files=files,
+        options=TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION
+    )
 
     cr = tu.codeComplete('fake.c', 9, 1, unsaved_files=files, include_brief_comments=True)
 

@@ -18,8 +18,11 @@ void f() {
 }
 """)]
     # make a comment-aware TU
-    tu = TranslationUnit.from_source('fake.c', ['-std=c99'], unsaved_files=files,
-            options=TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
+    tu = TranslationUnit.from_source(
+        'fake.c', ['-std=c99'],
+        unsaved_files=files,
+        options=TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION
+    )
     test1 = get_cursor(tu, 'test1')
     assert test1 is not None, "Could not find test1."
     assert test1.type.is_pod()

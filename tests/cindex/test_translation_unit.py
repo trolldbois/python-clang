@@ -84,8 +84,10 @@ def normpaths_equal(path1, path2):
 def test_includes():
     def eq(expected, actual):
         if not actual.is_input_file:
-            return normpaths_equal(expected[0], actual.source.name) and \
-                    normpaths_equal(expected[1], actual.include.name)
+            return (
+                normpaths_equal(expected[0], actual.source.name)
+                and normpaths_equal(expected[1], actual.include.name)
+            )
         else:
             return normpaths_equal(expected[1], actual.include.name)
 

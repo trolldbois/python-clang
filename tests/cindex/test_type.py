@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import gc
 
 from clang.cindex import CursorKind
@@ -129,7 +131,7 @@ def test_equal():
     assert a.type == b.type
     assert a.type != v.type
 
-    assert a.type != None
+    assert a.type is not None
     assert a.type != 'foo'
 
 def test_type_spelling():

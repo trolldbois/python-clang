@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from clang.cindex import TranslationUnit
 
 def check_completion_results(cr, expected):
@@ -7,7 +9,7 @@ def check_completion_results(cr, expected):
     completions = [str(c) for c in cr.results]
 
     for c in expected:
-        assert c in completions
+        assert c in completions, "Couldn't find '%s'" % c
 
 def test_code_complete():
     files = [('fake.c', """

@@ -1,7 +1,9 @@
+from __future__ import unicode_literals
+
 from clang.cindex import CursorKind
 
 def test_name():
-    assert CursorKind.UNEXPOSED_DECL.name is 'UNEXPOSED_DECL'
+    assert CursorKind.UNEXPOSED_DECL.name == 'UNEXPOSED_DECL'
 
 def test_get_all_kinds():
     kinds = CursorKind.get_all_kinds()
@@ -38,11 +40,15 @@ def test_kind_groups():
                              'is_statement', 'is_invalid', 'is_attribute')
                  if getattr(k, n)()]
 
-        if k in (   CursorKind.TRANSLATION_UNIT,
-                    CursorKind.MACRO_DEFINITION,
-                    CursorKind.MACRO_INSTANTIATION,
-                    CursorKind.INCLUSION_DIRECTIVE,
-                    CursorKind.PREPROCESSING_DIRECTIVE):
-            assert len(group) == 0
+        if k in (CursorKind.TRANSLATION_UNIT,
+                 CursorKind.MACRO_DEFINITION,
+                 CursorKind.MACRO_INSTANTIATION,
+                 CursorKind.INCLUSION_DIRECTIVE,
+                 CursorKind.PREPROCESSING_DIRECTIVE,
+                 CursorKind.VISIBILITY_ATTR,
+                 CursorKind.DLLEXPORT_ATTR,
+                 CursorKind.DLLIMPORT_ATTR,
+                 CursorKind.TYPE_ALIAS_TEMPLATE_DECL):
+            assert len(group) == 0, "Group %s, kind %s" % (group, k)
         else:
-            assert len(group) == 1
+            assert len(group) == 1, "Group %s, kind %s" % (group, k)

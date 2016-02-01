@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from clang.cindex import CompilationDatabase
 from clang.cindex import CompilationDatabaseError
 from clang.cindex import CompileCommands
@@ -24,7 +26,7 @@ def test_create():
 def test_lookup_fail():
     """Check file lookup failure"""
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
-    assert cdb.getCompileCommands('file_do_not_exist.cpp') == None
+    assert cdb.getCompileCommands('file_do_not_exist.cpp') is None
 
 def test_lookup_succeed():
     """Check we get some results if the file exists in the db"""
@@ -38,16 +40,32 @@ def test_all_compilecommand():
     cmds = cdb.getAllCompileCommands()
     assert len(cmds) == 3
     expected = [
-        { 'wd': '/home/john.doe/MyProjectA',
-          'line': ['clang++', '-o', 'project2.o', '-c',
-                   '/home/john.doe/MyProject/project2.cpp']},
-        { 'wd': '/home/john.doe/MyProjectB',
-          'line': ['clang++', '-DFEATURE=1', '-o', 'project2-feature.o', '-c',
-                   '/home/john.doe/MyProject/project2.cpp']},
-        { 'wd': '/home/john.doe/MyProject',
-          'line': ['clang++', '-o', 'project.o', '-c',
-                   '/home/john.doe/MyProject/project.cpp']}
-        ]
+        {
+            'wd': b'/home/john.doe/MyProjectA',
+            'line': [
+                b'clang++',
+                b'-o', b'project2.o',
+                b'-c', b'/home/john.doe/MyProject/project2.cpp'
+            ]
+        },
+        {
+            'wd': b'/home/john.doe/MyProjectB',
+            'line': [
+                b'clang++',
+                b'-DFEATURE=1',
+                b'-o', b'project2-feature.o',
+                b'-c', b'/home/john.doe/MyProject/project2.cpp'
+            ]
+        },
+        {
+            'wd': b'/home/john.doe/MyProject',
+            'line': [
+                b'clang++',
+                b'-o', b'project.o',
+                b'-c', b'/home/john.doe/MyProject/project.cpp'
+            ]
+        }
+    ]
     for i in range(len(cmds)):
         assert cmds[i].directory == expected[i]['wd']
         for arg, exp in zip(cmds[i].arguments, expected[i]['line']):
@@ -58,9 +76,12 @@ def test_1_compilecommand():
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
     cmds = cdb.getCompileCommands('/home/john.doe/MyProject/project.cpp')
     assert len(cmds) == 1
-    assert cmds[0].directory == '/home/john.doe/MyProject'
-    expected = [ 'clang++', '-o', 'project.o', '-c',
-                 '/home/john.doe/MyProject/project.cpp']
+    assert cmds[0].directory == b'/home/john.doe/MyProject'
+    expected = [
+        b'clang++',
+        b'-o', b'project.o',
+        b'-c', b'/home/john.doe/MyProject/project.cpp'
+    ]
     for arg, exp in zip(cmds[0].arguments, expected):
         assert arg == exp
 
@@ -70,13 +91,24 @@ def test_2_compilecommand():
     cmds = cdb.getCompileCommands('/home/john.doe/MyProject/project2.cpp')
     assert len(cmds) == 2
     expected = [
-        { 'wd': '/home/john.doe/MyProjectA',
-          'line': ['clang++', '-o', 'project2.o', '-c',
-                   '/home/john.doe/MyProject/project2.cpp']},
-        { 'wd': '/home/john.doe/MyProjectB',
-          'line': ['clang++', '-DFEATURE=1', '-o', 'project2-feature.o', '-c',
-                   '/home/john.doe/MyProject/project2.cpp']}
-        ]
+        {
+            'wd': b'/home/john.doe/MyProjectA',
+            'line': [
+                b'clang++',
+                b'-o', b'project2.o',
+                b'-c', b'/home/john.doe/MyProject/project2.cpp'
+            ]
+        },
+        {
+            'wd': b'/home/john.doe/MyProjectB',
+            'line': [
+                b'clang++',
+                b'-DFEATURE=1',
+                b'-o', b'project2-feature.o',
+                b'-c', b'/home/john.doe/MyProject/project2.cpp'
+            ]
+        }
+    ]
     for i in range(len(cmds)):
         assert cmds[i].directory == expected[i]['wd']
         for arg, exp in zip(cmds[i].arguments, expected[i]['line']):

@@ -6,6 +6,7 @@
 # License. See LICENSE.TXT for details.
 #
 #===------------------------------------------------------------------------===#
+from __future__ import unicode_literals
 
 r"""
 Clang Indexing Library Bindings
@@ -64,6 +65,8 @@ call is efficient.
 
 from ctypes import *
 import collections
+import sys
+
 
 import clang.enumerations
 
@@ -74,6 +77,12 @@ import clang.enumerations
 c_object_p = POINTER(c_void_p)
 
 callbacks = {}
+
+# Python 3 type compatibility
+if sys.version_info.major <= 2:
+    BASESTRING = basestring
+else:
+    BASESTRING = str
 
 ### Exception Classes ###
 
@@ -321,7 +330,7 @@ class Diagnostic(object):
 
     @property
     def spelling(self):
-        return conf.lib.clang_getDiagnosticSpelling(self)
+        return conf.lib.clang_getDiagnosticSpelling(self).decode('utf-8')
 
     @property
     def ranges(self):
@@ -367,12 +376,12 @@ class Diagnostic(object):
     @property
     def category_name(self):
         """The string name of the category for this diagnostic."""
-        return conf.lib.clang_getDiagnosticCategoryText(self)
+        return conf.lib.clang_getDiagnosticCategoryText(self).decode('utf-8')
 
     @property
     def option(self):
         """The command-line option that enables this diagnostic."""
-        return conf.lib.clang_getDiagnosticOption(self, None)
+        return conf.lib.clang_getDiagnosticOption(self, None).decode('utf-8')
 
     @property
     def disable_option(self):
@@ -380,7 +389,7 @@ class Diagnostic(object):
         disable = _CXString()
         conf.lib.clang_getDiagnosticOption(self, byref(disable))
 
-        return conf.lib.clang_getCString(disable)
+        return conf.lib.clang_getCString(disable).decode('utf-8')
 
     def __repr__(self):
         return "<Diagnostic severity %r, location %r, spelling %r>" % (
@@ -398,7 +407,7 @@ class FixIt(object):
 
     def __init__(self, range, value):
         self.range = range
-        self.value = value
+        self.value = value.decode('utf-8')
 
     def __repr__(self):
         return "<FixIt range %r, value %r>" % (self.range, self.value)
@@ -449,7 +458,7 @@ class TokenGroup(object):
 
         token_group = TokenGroup(tu, tokens_memory, tokens_count)
 
-        for i in xrange(0, count):
+        for i in range(0, count):
             token = Token()
             token.int_data = tokens_array[i].int_data
             token.ptr_data = tokens_array[i].ptr_data
@@ -512,8 +521,8 @@ class BaseEnumeration(object):
         if value >= len(self.__class__._kinds):
             self.__class__._kinds += [None] * (value - len(self.__class__._kinds) + 1)
         if self.__class__._kinds[value] is not None:
-            raise ValueError,'{0} value {1} already loaded'.format(
-                str(self.__class__), value)
+            raise ValueError('{0} value {1} already loaded'.format(
+                str(self.__class__), value))
         self.value = value
         self.__class__._kinds[value] = self
         self.__class__._name_map = None
@@ -535,7 +544,7 @@ class BaseEnumeration(object):
     @classmethod
     def from_id(cls, id):
         if id >= len(cls._kinds) or cls._kinds[id] is None:
-            raise ValueError,'Unknown template argument kind %d' % id
+            raise ValueError('Unknown template argument kind %d' % id)
         return cls._kinds[id]
 
     def __repr__(self):
@@ -554,7 +563,7 @@ class CursorKind(BaseEnumeration):
     @staticmethod
     def get_all_kinds():
         """Return all CursorKind enumeration instances."""
-        return filter(None, CursorKind._kinds)
+        return [k for k in CursorKind._kinds if k]
 
     def is_declaration(self):
         """Test if this is a declaration kind."""
@@ -1228,7 +1237,7 @@ class Cursor(Structure):
     def spelling(self):
         """Return the spelling of the entity pointed at by the cursor."""
         if not hasattr(self, '_spelling'):
-            self._spelling = conf.lib.clang_getCursorSpelling(self)
+            self._spelling = conf.lib.clang_getCursorSpelling(self).decode('utf-8')
 
         return self._spelling
 
@@ -1242,7 +1251,7 @@ class Cursor(Structure):
         arguments of a class template specialization.
         """
         if not hasattr(self, '_displayname'):
-            self._displayname = conf.lib.clang_getCursorDisplayName(self)
+            self._displayname = conf.lib.clang_getCursorDisplayName(self).decode('utf-8')
 
         return self._displayname
 
@@ -1250,7 +1259,7 @@ class Cursor(Structure):
     def mangled_name(self):
         """Return the mangled name for the entity referenced by this cursor."""
         if not hasattr(self, '_mangled_name'):
-            self._mangled_name = conf.lib.clang_Cursor_getMangling(self)
+            self._mangled_name = conf.lib.clang_Cursor_getMangling(self).decode('utf-8')
 
         return self._mangled_name
 
@@ -1387,7 +1396,7 @@ class Cursor(Structure):
         """Return the Objective-C type encoding as a str."""
         if not hasattr(self, '_objc_type_encoding'):
             self._objc_type_encoding = \
-              conf.lib.clang_getDeclObjCTypeEncoding(self)
+              conf.lib.clang_getDeclObjCTypeEncoding(self).decode('utf-8')
 
         return self._objc_type_encoding
 
@@ -1576,7 +1585,7 @@ class StorageClass(object):
         if value >= len(StorageClass._kinds):
             StorageClass._kinds += [None] * (value - len(StorageClass._kinds) + 1)
         if StorageClass._kinds[value] is not None:
-            raise ValueError,'StorageClass already loaded'
+            raise ValueError('StorageClass already loaded')
         self.value = value
         StorageClass._kinds[value] = self
         StorageClass._name_map = None
@@ -1597,7 +1606,7 @@ class StorageClass(object):
     @staticmethod
     def from_id(id):
         if id >= len(StorageClass._kinds) or not StorageClass._kinds[id]:
-            raise ValueError,'Unknown storage class %d' % id
+            raise ValueError('Unknown storage class %d' % id)
         return StorageClass._kinds[id]
 
     def __repr__(self):
@@ -1650,7 +1659,7 @@ class TypeKind(BaseEnumeration):
     @property
     def spelling(self):
         """Retrieve the spelling of this TypeKind."""
-        return conf.lib.clang_getTypeKindSpelling(self.value)
+        return conf.lib.clang_getTypeKindSpelling(self.value).decode('utf-8')
 
     def __repr__(self):
         return 'TypeKind.%s' % (self.name,)
@@ -1918,7 +1927,7 @@ class Type(Structure):
         """
         Retrieve the offset of a field in the record.
         """
-        return conf.lib.clang_Type_getOffsetOf(self, c_char_p(fieldname))
+        return conf.lib.clang_Type_getOffsetOf(self, c_char_p(fieldname.encode('utf-8')))
 
     def get_ref_qualifier(self):
         """
@@ -1945,7 +1954,7 @@ class Type(Structure):
     @property
     def spelling(self):
         """Retrieve the spelling of this Type."""
-        return conf.lib.clang_getTypeSpelling(self)
+        return conf.lib.clang_getTypeSpelling(self).decode('utf-8')
 
     def __eq__(self, other):
         if type(other) != type(self):
@@ -2029,7 +2038,7 @@ class CompletionChunk:
     def spelling(self):
         if self.__kindNumber in SpellingCache:
                 return SpellingCache[self.__kindNumber]
-        return conf.lib.clang_getCompletionChunkText(self.cs, self.key).spelling
+        return conf.lib.clang_getCompletionChunkText(self.cs, self.key).spelling.decode('utf-8')
 
     # We do not use @CachedProperty here, as the manual implementation is
     # apparently still significantly faster. Please profile carefully if you
@@ -2132,10 +2141,11 @@ class CompletionString(ClangObject):
         return _CXString()
 
     def __repr__(self):
+        brief_comment = self.briefComment.spelling.decode('utf-8') if self.briefComment.spelling else 'None'
         return " | ".join([str(a) for a in self]) \
                + " || Priority: " + str(self.priority) \
                + " || Availability: " + str(self.availability) \
-               + " || Brief comment: " + str(self.briefComment.spelling)
+               + " || Brief comment: " + brief_comment
 
 availabilityKinds = {
             0: CompletionChunk.Kind("Available"),
@@ -2332,7 +2342,8 @@ class TranslationUnit(ClangObject):
 
         args_array = None
         if len(args) > 0:
-            args_array = (c_char_p * len(args))(* args)
+            bargs = [arg.encode('utf-8') for arg in args]
+            args_array = (c_char_p * len(args))(* bargs)
 
         unsaved_array = None
         if len(unsaved_files) > 0:
@@ -2341,13 +2352,16 @@ class TranslationUnit(ClangObject):
                 if hasattr(contents, "read"):
                     contents = contents.read()
 
-                unsaved_array[i].name = name
-                unsaved_array[i].contents = contents
+                unsaved_array[i].name = name.encode('utf-8')
+                unsaved_array[i].contents = contents.encode('utf-8')
                 unsaved_array[i].length = len(contents)
 
-        ptr = conf.lib.clang_parseTranslationUnit(index, filename, args_array,
-                                    len(args), unsaved_array,
-                                    len(unsaved_files), options)
+        ptr = conf.lib.clang_parseTranslationUnit(
+            index, filename.encode('utf-8') if filename else None,
+            args_array, len(args),
+            unsaved_array, len(unsaved_files),
+            options
+        )
 
         if not ptr:
             raise TranslationUnitLoadError("Error parsing translation unit.")
@@ -2370,7 +2384,7 @@ class TranslationUnit(ClangObject):
         if index is None:
             index = Index.create()
 
-        ptr = conf.lib.clang_createTranslationUnit(index, filename)
+        ptr = conf.lib.clang_createTranslationUnit(index, filename.encode('utf-8'))
         if not ptr:
             raise TranslationUnitLoadError(filename)
 
@@ -2397,7 +2411,7 @@ class TranslationUnit(ClangObject):
     @property
     def spelling(self):
         """Get the original translation unit source file name."""
-        return conf.lib.clang_getTranslationUnitSpelling(self)
+        return conf.lib.clang_getTranslationUnitSpelling(self).decode('utf-8')
 
     def get_includes(self):
         """
@@ -2520,9 +2534,9 @@ class TranslationUnit(ClangObject):
                     # FIXME: It would be great to support an efficient version
                     # of this, one day.
                     value = value.read()
-                    print value
+                    print(value)
                 if not isinstance(value, str):
-                    raise TypeError,'Unexpected unsaved file contents.'
+                    raise TypeError('Unexpected unsaved file contents.')
                 unsaved_files_array[i].name = name
                 unsaved_files_array[i].contents = value
                 unsaved_files_array[i].length = len(value)
@@ -2545,7 +2559,7 @@ class TranslationUnit(ClangObject):
         filename -- The path to save the translation unit to.
         """
         options = conf.lib.clang_defaultSaveOptions(self)
-        result = int(conf.lib.clang_saveTranslationUnit(self, filename,
+        result = int(conf.lib.clang_saveTranslationUnit(self, filename.encode('utf-8'),
                                                         options))
         if result != 0:
             raise TranslationUnitSaveError(result,
@@ -2580,18 +2594,20 @@ class TranslationUnit(ClangObject):
         if len(unsaved_files):
             unsaved_files_array = (_CXUnsavedFile * len(unsaved_files))()
             for i,(name,value) in enumerate(unsaved_files):
-                if not isinstance(value, str):
+                if not isinstance(value, BASESTRING):
                     # FIXME: It would be great to support an efficient version
                     # of this, one day.
                     value = value.read()
-                    print value
-                if not isinstance(value, str):
-                    raise TypeError,'Unexpected unsaved file contents.'
-                unsaved_files_array[i].name = name
-                unsaved_files_array[i].contents = value
+                    print(value)
+                if not isinstance(value, BASESTRING):
+                    raise TypeError('Unexpected unsaved file contents.')
+                unsaved_files_array[i].name = name.encode('utf-8')
+                unsaved_files_array[i].contents = value.encode('utf-8')
                 unsaved_files_array[i].length = len(value)
-        ptr = conf.lib.clang_codeCompleteAt(self, path, line, column,
-                unsaved_files_array, len(unsaved_files), options)
+        ptr = conf.lib.clang_codeCompleteAt(
+            self, path.encode('utf-8'), line, column,
+            unsaved_files_array, len(unsaved_files), options
+        )
         if ptr:
             return CodeCompletionResults(ptr)
         return None
@@ -2618,12 +2634,12 @@ class File(ClangObject):
     @staticmethod
     def from_name(translation_unit, file_name):
         """Retrieve a file handle within the given translation unit."""
-        return File(conf.lib.clang_getFile(translation_unit, file_name))
+        return File(conf.lib.clang_getFile(translation_unit, file_name.encode('utf-8')))
 
     @property
     def name(self):
         """Return the complete file and path name of the file."""
-        return conf.lib.clang_getCString(conf.lib.clang_getFileName(self))
+        return conf.lib.clang_getCString(conf.lib.clang_getFileName(self)).decode('utf-8')
 
     @property
     def time(self):
@@ -2711,7 +2727,7 @@ class CompileCommand(object):
         Invariant : the first argument is the compiler executable
         """
         length = conf.lib.clang_CompileCommand_getNumArgs(self.cmd)
-        for i in xrange(length):
+        for i in range(length):
             yield conf.lib.clang_CompileCommand_getArg(self.cmd, i)
 
 class CompileCommands(object):
@@ -2763,8 +2779,9 @@ class CompilationDatabase(ClangObject):
         """Builds a CompilationDatabase from the database found in buildDir"""
         errorCode = c_uint()
         try:
-            cdb = conf.lib.clang_CompilationDatabase_fromDirectory(buildDir,
-                byref(errorCode))
+            cdb = conf.lib.clang_CompilationDatabase_fromDirectory(
+                buildDir.encode('utf-8'), byref(errorCode)
+            )
         except CompilationDatabaseError as e:
             raise CompilationDatabaseError(int(errorCode.value),
                                            "CompilationDatabase loading failed")
@@ -2776,7 +2793,7 @@ class CompilationDatabase(ClangObject):
         build filename. Returns None if filename is not found in the database.
         """
         return conf.lib.clang_CompilationDatabase_getCompileCommands(self,
-                                                                     filename)
+                                                                     filename.encode('utf-8'))
 
     def getAllCompileCommands(self):
         """
@@ -2806,7 +2823,7 @@ class Token(Structure):
 
         This is the textual representation of the token in source.
         """
-        return conf.lib.clang_getTokenSpelling(self._tu, self)
+        return conf.lib.clang_getTokenSpelling(self._tu, self).decode('utf-8')
 
     @property
     def kind(self):
@@ -3520,7 +3537,13 @@ def register_functions(lib, ignore_errors):
     def register(item):
         return register_function(lib, item, ignore_errors)
 
-    map(register, functionList)
+    for f in functionList:
+        try:
+            register(f)
+        except LibclangError:
+            # If the symbol doesn't exist, don't panic.
+            pass
+
 
 class Config:
     library_path = None

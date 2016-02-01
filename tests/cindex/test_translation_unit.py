@@ -1,5 +1,8 @@
+from __future__ import unicode_literals
+
 import gc
 import os
+from io import StringIO
 import tempfile
 
 from clang.cindex import CursorKind
@@ -59,9 +62,8 @@ int SOME_DEFINE;
     assert spellings[-1] == 'y'
 
 def test_unsaved_files_2():
-    import StringIO
     tu = TranslationUnit.from_source('fake.c', unsaved_files = [
-            ('fake.c', StringIO.StringIO('int x;'))])
+            ('fake.c', StringIO('int x;'))])
     spellings = [c.spelling for c in tu.cursor.get_children()]
     assert spellings[-1] == 'x'
 
@@ -240,7 +242,7 @@ def test_fail_from_source():
         tu = TranslationUnit.from_source(path)
     except TranslationUnitLoadError:
         tu = None
-    assert tu == None
+    assert tu is None
 
 def test_fail_from_ast_file():
     path = os.path.join(kInputsDir, 'non-existent.ast')
@@ -248,4 +250,4 @@ def test_fail_from_ast_file():
         tu = TranslationUnit.from_ast_file(path)
     except TranslationUnitLoadError:
         tu = None
-    assert tu == None
+    assert tu is None

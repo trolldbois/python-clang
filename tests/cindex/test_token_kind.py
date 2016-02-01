@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from clang.cindex import TokenKind
 from nose.tools import eq_
 from nose.tools import ok_

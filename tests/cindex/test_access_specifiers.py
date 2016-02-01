@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 from clang.cindex import AccessSpecifier
 from clang.cindex import Cursor

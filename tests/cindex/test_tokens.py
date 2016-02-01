@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from clang.cindex import CursorKind
 from clang.cindex import Index
 from clang.cindex import SourceLocation

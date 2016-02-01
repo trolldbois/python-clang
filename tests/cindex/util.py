@@ -1,4 +1,5 @@
 # This file provides common utility functions for the test suite.
+from __future__ import unicode_literals
 
 from clang.cindex import Cursor
 from clang.cindex import TranslationUnit

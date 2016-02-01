@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from clang.cindex import Cursor
 from clang.cindex import File
 from clang.cindex import SourceLocation

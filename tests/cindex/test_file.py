@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from clang.cindex import Index, File
 
 def test_file():

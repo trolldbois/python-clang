@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from clang.cindex import TranslationUnit
 
+
 def check_completion_results(cr, expected):
     assert cr is not None
     assert len(cr.diagnostics) == 0
@@ -10,6 +11,7 @@ def check_completion_results(cr, expected):
 
     for c in expected:
         assert c in completions, "Couldn't find '%s'" % c
+
 
 def test_code_complete():
     files = [('fake.c', """
@@ -30,11 +32,12 @@ void f() {
     cr = tu.codeComplete('fake.c', 9, 1, unsaved_files=files, include_brief_comments=True)
 
     expected = [
-      "{'int', ResultType} | {'test1', TypedText} || Priority: 50 || Availability: Available || Brief comment: Aaa.",
-      "{'void', ResultType} | {'test2', TypedText} | {'(', LeftParen} | {')', RightParen} || Priority: 50 || Availability: Available || Brief comment: Bbb.",
-      "{'return', TypedText} || Priority: 40 || Availability: Available || Brief comment: None"
+        "{'int', ResultType} | {'test1', TypedText} || Priority: 50 || Availability: Available || Brief comment: Aaa.",
+        "{'void', ResultType} | {'test2', TypedText} | {'(', LeftParen} | {')', RightParen} || Priority: 50 || Availability: Available || Brief comment: Bbb.",
+        "{'return', TypedText} || Priority: 40 || Availability: Available || Brief comment: None"
     ]
     check_completion_results(cr, expected)
+
 
 def test_code_complete_availability():
     files = [('fake.cpp', """
@@ -59,11 +62,11 @@ void f(P x, Q y) {
     cr = tu.codeComplete('fake.cpp', 12, 5, unsaved_files=files)
 
     expected = [
-      "{'const', TypedText} || Priority: 40 || Availability: Available || Brief comment: None",
-      "{'volatile', TypedText} || Priority: 40 || Availability: Available || Brief comment: None",
-      "{'operator', TypedText} || Priority: 40 || Availability: Available || Brief comment: None",
-      "{'P', TypedText} | {'::', Text} || Priority: 75 || Availability: Available || Brief comment: None",
-      "{'Q', TypedText} | {'::', Text} || Priority: 75 || Availability: Available || Brief comment: None"
+        "{'const', TypedText} || Priority: 40 || Availability: Available || Brief comment: None",
+        "{'volatile', TypedText} || Priority: 40 || Availability: Available || Brief comment: None",
+        "{'operator', TypedText} || Priority: 40 || Availability: Available || Brief comment: None",
+        "{'P', TypedText} | {'::', Text} || Priority: 75 || Availability: Available || Brief comment: None",
+        "{'Q', TypedText} | {'::', Text} || Priority: 75 || Availability: Available || Brief comment: None"
     ]
     check_completion_results(cr, expected)
 

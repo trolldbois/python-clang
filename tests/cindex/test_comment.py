@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from clang.cindex import TranslationUnit
 from tests.cindex.util import get_cursor
 
+
 def test_comment():
     files = [('fake.c', """
 /// Aaa.
@@ -38,5 +39,3 @@ void f() {
     brief = f.brief_comment
     assert raw is None
     assert brief is None
-
-

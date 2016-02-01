@@ -84,6 +84,7 @@ if sys.version_info.major <= 2:
 else:
     BASESTRING = str
 
+
 ### Exception Classes ###
 
 class TranslationUnitLoadError(Exception):
@@ -95,6 +96,7 @@ class TranslationUnitLoadError(Exception):
     FIXME: Make libclang expose additional error information in this scenario.
     """
     pass
+
 
 class TranslationUnitSaveError(Exception):
     """Represents an error that occurred when saving a TranslationUnit.
@@ -125,6 +127,7 @@ class TranslationUnitSaveError(Exception):
 
         self.save_error = enumeration
         Exception.__init__(self, 'Error %d: %s' % (enumeration, message))
+
 
 ### Structures and Utility Classes ###
 
@@ -165,6 +168,7 @@ class _CXString(Structure):
     def from_result(res, fn, args):
         assert isinstance(res, _CXString)
         return conf.lib.clang_getCString(res)
+
 
 class SourceLocation(Structure):
     """
@@ -237,6 +241,7 @@ class SourceLocation(Structure):
         return "<SourceLocation file %r, line %r, column %r>" % (
             filename, self.line, self.column)
 
+
 class SourceRange(Structure):
     """
     A SourceRange describes a range of source locations within the source
@@ -281,7 +286,7 @@ class SourceRange(Structure):
             return False
         if other.file is None and self.start.file is None:
             pass
-        elif ( self.start.file.name != other.file.name or
+        elif (self.start.file.name != other.file.name or
                other.file.name != self.end.file.name):
             # same file name
             return False
@@ -300,6 +305,7 @@ class SourceRange(Structure):
 
     def __repr__(self):
         return "<SourceRange start %r, end %r>" % (self.start, self.end)
+
 
 class Diagnostic(object):
     """
@@ -396,7 +402,8 @@ class Diagnostic(object):
             self.severity, self.location, self.spelling)
 
     def from_param(self):
-      return self.ptr
+        return self.ptr
+
 
 class FixIt(object):
     """
@@ -411,6 +418,7 @@ class FixIt(object):
 
     def __repr__(self):
         return "<FixIt range %r, value %r>" % (self.range, self.value)
+
 
 class TokenGroup(object):
     """Helper class to facilitate token management.
@@ -467,10 +475,11 @@ class TokenGroup(object):
 
             yield token
 
+
 class TokenKind(object):
     """Describes a specific type of a Token."""
 
-    _value_map = {} # int -> TokenKind
+    _value_map = {}  # int -> TokenKind
 
     def __init__(self, value, name):
         """Create a new TokenKind instance from a numeric value and a name."""
@@ -504,7 +513,9 @@ class TokenKind(object):
         TokenKind._value_map[value] = kind
         setattr(TokenKind, name, kind)
 
+
 ### Cursor Kinds ###
+
 class BaseEnumeration(object):
     """
     Common base class for named enumerations held in sync with Index.h values.
@@ -526,7 +537,6 @@ class BaseEnumeration(object):
         self.value = value
         self.__class__._kinds[value] = self
         self.__class__._name_map = None
-
 
     def from_param(self):
         return self.value
@@ -1129,7 +1139,9 @@ CursorKind.MODULE_IMPORT_DECL = CursorKind(600)
 # A type alias template declaration
 CursorKind.TYPE_ALIAS_TEMPLATE_DECL = CursorKind(601)
 
+
 ### Template Argument Kinds ###
+
 class TemplateArgumentKind(BaseEnumeration):
     """
     A TemplateArgumentKind describes the kind of entity that a template argument
@@ -1145,6 +1157,7 @@ TemplateArgumentKind.TYPE = TemplateArgumentKind(1)
 TemplateArgumentKind.DECLARATION = TemplateArgumentKind(2)
 TemplateArgumentKind.NULLPTR = TemplateArgumentKind(3)
 TemplateArgumentKind.INTEGRAL = TemplateArgumentKind(4)
+
 
 ### Cursors ###
 
@@ -1349,7 +1362,7 @@ class Cursor(Structure):
         if not hasattr(self, '_underlying_type'):
             assert self.kind.is_declaration()
             self._underlying_type = \
-              conf.lib.clang_getTypedefDeclUnderlyingType(self)
+                conf.lib.clang_getTypedefDeclUnderlyingType(self)
 
         return self._underlying_type
 
@@ -1386,7 +1399,7 @@ class Cursor(Structure):
                                         TypeKind.ULONGLONG,
                                         TypeKind.UINT128):
                 self._enum_value = \
-                  conf.lib.clang_getEnumConstantDeclUnsignedValue(self)
+                    conf.lib.clang_getEnumConstantDeclUnsignedValue(self)
             else:
                 self._enum_value = conf.lib.clang_getEnumConstantDeclValue(self)
         return self._enum_value
@@ -1396,7 +1409,7 @@ class Cursor(Structure):
         """Return the Objective-C type encoding as a str."""
         if not hasattr(self, '_objc_type_encoding'):
             self._objc_type_encoding = \
-              conf.lib.clang_getDeclObjCTypeEncoding(self).decode('utf-8')
+                conf.lib.clang_getDeclObjCTypeEncoding(self).decode('utf-8')
 
         return self._objc_type_encoding
 
@@ -1491,7 +1504,7 @@ class Cursor(Structure):
             # Create reference to TU so it isn't GC'd before Cursor.
             child._tu = self._tu
             children.append(child)
-            return 1 # continue
+            return 1  # continue
         children = []
         conf.lib.clang_visitChildren(self, callbacks['cursor_visit'](visitor),
             children)
@@ -1572,6 +1585,7 @@ class Cursor(Structure):
         res._tu = args[0]._tu
         return res
 
+
 class StorageClass(object):
     """
     Describes the storage class of a declaration
@@ -1598,8 +1612,8 @@ class StorageClass(object):
         """Get the enumeration name of this storage class."""
         if self._name_map is None:
             self._name_map = {}
-            for key,value in StorageClass.__dict__.items():
-                if isinstance(value,StorageClass):
+            for key, value in StorageClass.__dict__.items():
+                if isinstance(value, StorageClass):
                     self._name_map[value] = key
         return self._name_map[self]
 
@@ -1644,6 +1658,7 @@ AccessSpecifier.PUBLIC = AccessSpecifier(1)
 AccessSpecifier.PROTECTED = AccessSpecifier(2)
 AccessSpecifier.PRIVATE = AccessSpecifier(3)
 AccessSpecifier.NONE = AccessSpecifier(4)
+
 
 ### Type Kinds ###
 
@@ -1714,6 +1729,7 @@ TypeKind.DEPENDENTSIZEDARRAY = TypeKind(116)
 TypeKind.MEMBERPOINTER = TypeKind(117)
 TypeKind.AUTO = TypeKind(118)
 
+
 class RefQualifierKind(BaseEnumeration):
     """Describes a specific ref-qualifier of a type."""
 
@@ -1730,6 +1746,7 @@ class RefQualifierKind(BaseEnumeration):
 RefQualifierKind.NONE = RefQualifierKind(0)
 RefQualifierKind.LVALUE = RefQualifierKind(1)
 RefQualifierKind.RVALUE = RefQualifierKind(2)
+
 
 class Type(Structure):
     """
@@ -1769,7 +1786,7 @@ class Type(Structure):
 
                 if key >= len(self):
                     raise IndexError("Index greater than container length: "
-                                     "%d > %d" % ( key, len(self) ))
+                                     "%d > %d" % (key, len(self)))
 
                 result = conf.lib.clang_getArgType(self.parent, key)
                 if result.kind == TypeKind.INVALID:
@@ -1945,7 +1962,7 @@ class Type(Structure):
             # Create reference to TU so it isn't GC'd before Cursor.
             field._tu = self._tu
             fields.append(field)
-            return 1 # continue
+            return 1  # continue
         fields = []
         conf.lib.clang_Type_visitFields(self,
                             callbacks['fields_visit'](visitor), fields)
@@ -1964,6 +1981,7 @@ class Type(Structure):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 ## CIndex Objects ##
 
@@ -1992,28 +2010,29 @@ class _CXUnsavedFile(Structure):
 # for most symboles, we do not need to perform a function call. Their spelling
 # never changes and is consequently provided by this spelling cache.
 SpellingCache = {
-            # 0: CompletionChunk.Kind("Optional"),
-            # 1: CompletionChunk.Kind("TypedText"),
-            # 2: CompletionChunk.Kind("Text"),
-            # 3: CompletionChunk.Kind("Placeholder"),
-            # 4: CompletionChunk.Kind("Informative"),
-            # 5 : CompletionChunk.Kind("CurrentParameter"),
-            6: '(',   # CompletionChunk.Kind("LeftParen"),
-            7: ')',   # CompletionChunk.Kind("RightParen"),
-            8: '[',   # CompletionChunk.Kind("LeftBracket"),
-            9: ']',   # CompletionChunk.Kind("RightBracket"),
-            10: '{',  # CompletionChunk.Kind("LeftBrace"),
-            11: '}',  # CompletionChunk.Kind("RightBrace"),
-            12: '<',  # CompletionChunk.Kind("LeftAngle"),
-            13: '>',  # CompletionChunk.Kind("RightAngle"),
-            14: ', ', # CompletionChunk.Kind("Comma"),
-            # 15: CompletionChunk.Kind("ResultType"),
-            16: ':',  # CompletionChunk.Kind("Colon"),
-            17: ';',  # CompletionChunk.Kind("SemiColon"),
-            18: '=',  # CompletionChunk.Kind("Equal"),
-            19: ' ',  # CompletionChunk.Kind("HorizontalSpace"),
-            # 20: CompletionChunk.Kind("VerticalSpace")
+            # 0:         CompletionChunk.Kind("Optional"),
+            # 1:         CompletionChunk.Kind("TypedText"),
+            # 2:         CompletionChunk.Kind("Text"),
+            # 3:         CompletionChunk.Kind("Placeholder"),
+            # 4:         CompletionChunk.Kind("Informative"),
+            # 5 :        CompletionChunk.Kind("CurrentParameter"),
+            6: '(',    # CompletionChunk.Kind("LeftParen"),
+            7: ')',    # CompletionChunk.Kind("RightParen"),
+            8: '[',    # CompletionChunk.Kind("LeftBracket"),
+            9: ']',    # CompletionChunk.Kind("RightBracket"),
+            10: '{',   # CompletionChunk.Kind("LeftBrace"),
+            11: '}',   # CompletionChunk.Kind("RightBrace"),
+            12: '<',   # CompletionChunk.Kind("LeftAngle"),
+            13: '>',   # CompletionChunk.Kind("RightAngle"),
+            14: ', ',  # CompletionChunk.Kind("Comma"),
+            # 15:        CompletionChunk.Kind("ResultType"),
+            16: ':',   # CompletionChunk.Kind("Colon"),
+            17: ';',   # CompletionChunk.Kind("SemiColon"),
+            18: '=',   # CompletionChunk.Kind("Equal"),
+            19: ' ',   # CompletionChunk.Kind("HorizontalSpace"),
+            # 20:        CompletionChunk.Kind("VerticalSpace")
 }
+
 
 class CompletionChunk:
     class Kind:
@@ -2060,24 +2079,25 @@ class CompletionChunk:
                                                                 self.key)
 
         if (res):
-          return CompletionString(res)
+            return CompletionString(res)
         else:
-          None
+            None
 
     def isKindOptional(self):
-      return self.__kindNumber == 0
+        return self.__kindNumber == 0
 
     def isKindTypedText(self):
-      return self.__kindNumber == 1
+        return self.__kindNumber == 1
 
     def isKindPlaceHolder(self):
-      return self.__kindNumber == 3
+        return self.__kindNumber == 3
 
     def isKindInformative(self):
-      return self.__kindNumber == 4
+        return self.__kindNumber == 4
 
     def isKindResultType(self):
-      return self.__kindNumber == 15
+        return self.__kindNumber == 15
+
 
 completionChunkKindMap = {
             0: CompletionChunk.Kind("Optional"),
@@ -2101,6 +2121,7 @@ completionChunkKindMap = {
             18: CompletionChunk.Kind("Equal"),
             19: CompletionChunk.Kind("HorizontalSpace"),
             20: CompletionChunk.Kind("VerticalSpace")}
+
 
 class CompletionString(ClangObject):
     class Availability:
@@ -2153,6 +2174,7 @@ availabilityKinds = {
             2: CompletionChunk.Kind("NotAvailable"),
             3: CompletionChunk.Kind("NotAccessible")}
 
+
 class CodeCompletionResult(Structure):
     _fields_ = [('cursorKind', c_int), ('completionString', c_object_p)]
 
@@ -2167,6 +2189,7 @@ class CodeCompletionResult(Structure):
     def string(self):
         return CompletionString(self.completionString)
 
+
 class CCRStructure(Structure):
     _fields_ = [('results', POINTER(CodeCompletionResult)),
                 ('numResults', c_int)]
@@ -2179,6 +2202,7 @@ class CCRStructure(Structure):
             raise IndexError
 
         return self.results[key]
+
 
 class CodeCompletionResults(ClangObject):
     def __init__(self, ptr):
@@ -2199,11 +2223,11 @@ class CodeCompletionResults(ClangObject):
     def diagnostics(self):
         class DiagnosticsItr:
             def __init__(self, ccr):
-                self.ccr= ccr
+                self.ccr = ccr
 
             def __len__(self):
-                return int(\
-                  conf.lib.clang_codeCompleteGetNumDiagnostics(self.ccr))
+                return int(
+                    conf.lib.clang_codeCompleteGetNumDiagnostics(self.ccr))
 
             def __getitem__(self, key):
                 return conf.lib.clang_codeCompleteGetDiagnostic(self.ccr, key)
@@ -2234,7 +2258,7 @@ class Index(ClangObject):
         """Load a TranslationUnit from the given AST file."""
         return TranslationUnit.from_ast_file(path, self)
 
-    def parse(self, path, args=None, unsaved_files=None, options = 0):
+    def parse(self, path, args=None, unsaved_files=None, options=0):
         """Load the translation unit from the given source code file by running
         clang and generating the AST before loading. Additional command line
         parameters can be passed to clang via the args parameter.
@@ -2249,6 +2273,7 @@ class Index(ClangObject):
         """
         return TranslationUnit.from_source(path, args, unsaved_files, options,
                                            self)
+
 
 class TranslationUnit(ClangObject):
     """Represents a source code translation unit.
@@ -2529,7 +2554,7 @@ class TranslationUnit(ClangObject):
         unsaved_files_array = 0
         if len(unsaved_files):
             unsaved_files_array = (_CXUnsavedFile * len(unsaved_files))()
-            for i,(name,value) in enumerate(unsaved_files):
+            for i, (name, value) in enumerate(unsaved_files):
                 if not isinstance(value, str):
                     # FIXME: It would be great to support an efficient version
                     # of this, one day.
@@ -2540,7 +2565,7 @@ class TranslationUnit(ClangObject):
                 unsaved_files_array[i].name = name
                 unsaved_files_array[i].contents = value
                 unsaved_files_array[i].length = len(value)
-        ptr = conf.lib.clang_reparseTranslationUnit(self, len(unsaved_files),
+        conf.lib.clang_reparseTranslationUnit(self, len(unsaved_files),
                 unsaved_files_array, options)
 
     def save(self, filename):
@@ -2593,7 +2618,7 @@ class TranslationUnit(ClangObject):
         unsaved_files_array = 0
         if len(unsaved_files):
             unsaved_files_array = (_CXUnsavedFile * len(unsaved_files))()
-            for i,(name,value) in enumerate(unsaved_files):
+            for i, (name, value) in enumerate(unsaved_files):
                 if not isinstance(value, BASESTRING):
                     # FIXME: It would be great to support an efficient version
                     # of this, one day.
@@ -2624,6 +2649,7 @@ class TranslationUnit(ClangObject):
             extent = SourceRange(start=locations[0], end=locations[1])
 
         return TokenGroup.get_tokens(self, extent)
+
 
 class File(ClangObject):
     """
@@ -2660,6 +2686,7 @@ class File(ClangObject):
         res._tu = args[0]._tu
         return res
 
+
 class FileInclusion(object):
     """
     The FileInclusion class represents the inclusion of one source file by
@@ -2679,6 +2706,7 @@ class FileInclusion(object):
     def is_input_file(self):
         """True if the included file is the input file."""
         return self.depth == 0
+
 
 class CompilationDatabaseError(Exception):
     """Represents an error that occurred when working with a CompilationDatabase
@@ -2705,6 +2733,7 @@ class CompilationDatabaseError(Exception):
         self.cdb_error = enumeration
         Exception.__init__(self, 'Error %d: %s' % (enumeration, message))
 
+
 class CompileCommand(object):
     """Represents the compile command used to build a file"""
     def __init__(self, cmd, ccmds):
@@ -2729,6 +2758,7 @@ class CompileCommand(object):
         length = conf.lib.clang_CompileCommand_getNumArgs(self.cmd)
         for i in range(length):
             yield conf.lib.clang_CompileCommand_getArg(self.cmd, i)
+
 
 class CompileCommands(object):
     """
@@ -2756,6 +2786,7 @@ class CompileCommands(object):
             return None
         return CompileCommands(res)
 
+
 class CompilationDatabase(ClangObject):
     """
     The CompilationDatabase is a wrapper class around
@@ -2782,7 +2813,7 @@ class CompilationDatabase(ClangObject):
             cdb = conf.lib.clang_CompilationDatabase_fromDirectory(
                 buildDir.encode('utf-8'), byref(errorCode)
             )
-        except CompilationDatabaseError as e:
+        except CompilationDatabaseError:
             raise CompilationDatabaseError(int(errorCode.value),
                                            "CompilationDatabase loading failed")
         return cdb
@@ -3188,7 +3219,7 @@ functionList = [
 
   ("clang_getFileName",
    [File],
-   _CXString), # TODO go through _CXString.from_result?
+   _CXString),  # TODO go through _CXString.from_result?
 
   ("clang_getFileTime",
    [File],
@@ -3499,12 +3530,14 @@ functionList = [
    c_uint),
 ]
 
+
 class LibclangError(Exception):
     def __init__(self, message):
         self.m = message
 
     def __str__(self):
         return self.m
+
 
 def register_function(lib, item, ignore_errors):
     # A function may not exist, if these bindings are used with an older or
@@ -3526,6 +3559,7 @@ def register_function(lib, item, ignore_errors):
 
     if len(item) == 4:
         func.errcheck = item[3]
+
 
 def register_functions(lib, ignore_errors):
     """Register function prototypes with a libclang library instance.
@@ -3555,7 +3589,7 @@ class Config:
     def set_library_path(path):
         """Set the path in which to search for libclang"""
         if Config.loaded:
-            raise Exception("library path must be set before before using " \
+            raise Exception("library path must be set before before using "
                             "any other functionalities in libclang.")
 
         Config.library_path = path
@@ -3564,7 +3598,7 @@ class Config:
     def set_library_file(filename):
         """Set the exact location of libclang"""
         if Config.loaded:
-            raise Exception("library file must be set before before using " \
+            raise Exception("library file must be set before before using "
                             "any other functionalities in libclang.")
 
         Config.library_file = filename
@@ -3588,7 +3622,7 @@ class Config:
         libclang versions.
         """
         if Config.loaded:
-            raise Exception("compatibility_check must be set before before " \
+            raise Exception("compatibility_check must be set before before "
                             "using any other functionalities in libclang.")
 
         Config.compatibility_check = check_status
@@ -3637,6 +3671,7 @@ class Config:
             return False
 
         return True
+
 
 def register_enumerations():
     for name, value in clang.enumerations.TokenKinds:

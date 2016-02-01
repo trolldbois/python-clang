@@ -19,10 +19,12 @@ from .util import get_tu
 
 kInputsDir = os.path.join(os.path.dirname(__file__), 'INPUTS')
 
+
 def test_spelling():
     path = os.path.join(kInputsDir, 'hello.cpp')
     tu = TranslationUnit.from_source(path)
     assert tu.spelling == path
+
 
 def test_cursor():
     path = os.path.join(kInputsDir, 'hello.cpp')
@@ -31,12 +33,14 @@ def test_cursor():
     assert isinstance(c, Cursor)
     assert c.kind is CursorKind.TRANSLATION_UNIT
 
+
 def test_parse_arguments():
     path = os.path.join(kInputsDir, 'parse_arguments.c')
     tu = TranslationUnit.from_source(path, ['-DDECL_ONE=hello', '-DDECL_TWO=hi'])
     spellings = [c.spelling for c in tu.cursor.get_children()]
     assert spellings[-2] == 'hello'
     assert spellings[-1] == 'hi'
+
 
 def test_reparse_arguments():
     path = os.path.join(kInputsDir, 'parse_arguments.c')
@@ -46,8 +50,9 @@ def test_reparse_arguments():
     assert spellings[-2] == 'hello'
     assert spellings[-1] == 'hi'
 
+
 def test_unsaved_files():
-    tu = TranslationUnit.from_source('fake.c', ['-I./'], unsaved_files = [
+    tu = TranslationUnit.from_source('fake.c', ['-I./'], unsaved_files=[
             ('fake.c', """
 #include "fake.h"
 int x;
@@ -61,11 +66,13 @@ int SOME_DEFINE;
     assert spellings[-2] == 'x'
     assert spellings[-1] == 'y'
 
+
 def test_unsaved_files_2():
-    tu = TranslationUnit.from_source('fake.c', unsaved_files = [
+    tu = TranslationUnit.from_source('fake.c', unsaved_files=[
             ('fake.c', StringIO('int x;'))])
     spellings = [c.spelling for c in tu.cursor.get_children()]
     assert spellings[-1] == 'x'
+
 
 def normpaths_equal(path1, path2):
     """ Compares two paths for equality after normalizing them with
@@ -73,10 +80,11 @@ def normpaths_equal(path1, path2):
     """
     return os.path.normpath(path1) == os.path.normpath(path2)
 
+
 def test_includes():
     def eq(expected, actual):
         if not actual.is_input_file:
-            return  normpaths_equal(expected[0], actual.source.name) and \
+            return normpaths_equal(expected[0], actual.source.name) and \
                     normpaths_equal(expected[1], actual.include.name)
         else:
             return normpaths_equal(expected[1], actual.include.name)
@@ -91,6 +99,7 @@ def test_includes():
     for i in zip(inc, tu.get_includes()):
         assert eq(i[0], i[1])
 
+
 def save_tu(tu):
     """Convenience API to save a TranslationUnit to a file.
 
@@ -101,6 +110,7 @@ def save_tu(tu):
 
     return path
 
+
 def test_save():
     """Ensure TranslationUnit.save() works."""
 
@@ -110,6 +120,7 @@ def test_save():
     assert os.path.exists(path)
     assert os.path.getsize(path) > 0
     os.unlink(path)
+
 
 def test_save_translation_errors():
     """Ensure that saving to an invalid directory raises."""
@@ -125,6 +136,7 @@ def test_save_translation_errors():
     except TranslationUnitSaveError as ex:
         expected = TranslationUnitSaveError.ERROR_UNKNOWN
         assert ex.save_error == expected
+
 
 def test_load():
     """Ensure TranslationUnits can be constructed from saved files."""
@@ -147,11 +159,13 @@ def test_load():
 
     os.unlink(path)
 
+
 def test_index_parse():
     path = os.path.join(kInputsDir, 'hello.cpp')
     index = Index.create()
     tu = index.parse(path)
     assert isinstance(tu, TranslationUnit)
+
 
 def test_get_file():
     """Ensure tu.get_file() works appropriately."""
@@ -169,6 +183,7 @@ def test_get_file():
     else:
         assert False
 
+
 def test_get_source_location():
     """Ensure tu.get_source_location() works."""
 
@@ -185,19 +200,20 @@ def test_get_source_location():
     assert location.column == 3
     assert location.file.name == 't.c'
 
+
 def test_get_source_range():
     """Ensure tu.get_source_range() works."""
 
     tu = get_tu('int foo();')
 
-    r = tu.get_extent('t.c', (1,4))
+    r = tu.get_extent('t.c', (1, 4))
     assert isinstance(r, SourceRange)
     assert r.start.offset == 1
     assert r.end.offset == 4
     assert r.start.file.name == 't.c'
     assert r.end.file.name == 't.c'
 
-    r = tu.get_extent('t.c', ((1,2), (1,3)))
+    r = tu.get_extent('t.c', ((1, 2), (1, 3)))
     assert isinstance(r, SourceRange)
     assert r.start.line == 1
     assert r.start.column == 2
@@ -215,6 +231,7 @@ def test_get_source_range():
     assert r.end.offset == 5
     assert r.start.file.name == 't.c'
     assert r.end.file.name == 't.c'
+
 
 def test_get_tokens_gc():
     """Ensures get_tokens() works properly with garbage collection."""
@@ -234,7 +251,8 @@ def test_get_tokens_gc():
     # May trigger segfault if we don't do our job properly.
     del tokens
     gc.collect()
-    gc.collect() # Just in case.
+    gc.collect()  # Just in case.
+
 
 def test_fail_from_source():
     path = os.path.join(kInputsDir, 'non-existent.cpp')
@@ -243,6 +261,7 @@ def test_fail_from_source():
     except TranslationUnitLoadError:
         tu = None
     assert tu is None
+
 
 def test_fail_from_ast_file():
     path = os.path.join(kInputsDir, 'non-existent.ast')

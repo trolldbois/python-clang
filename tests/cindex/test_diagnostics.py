@@ -5,6 +5,7 @@ from .util import get_tu
 
 # FIXME: We need support for invalid translation units to test better.
 
+
 def test_diagnostic_warning():
     tu = get_tu('int f0() {}\n')
     assert len(tu.diagnostics) == 1
@@ -13,6 +14,7 @@ def test_diagnostic_warning():
     assert tu.diagnostics[0].location.column == 11
     assert (tu.diagnostics[0].spelling ==
             'control reaches end of non-void function')
+
 
 def test_diagnostic_note():
     # FIXME: We aren't getting notes here for some reason.
@@ -26,6 +28,7 @@ def test_diagnostic_note():
 #    assert tu.diagnostics[1].location.line == 1
 #    assert tu.diagnostics[1].location.column == 11
 #    assert tu.diagnostics[1].spelling == 'instantiated from'
+
 
 def test_diagnostic_fixit():
     tu = get_tu('struct { int f0; } x = { f0 : 1 };')
@@ -41,6 +44,7 @@ def test_diagnostic_fixit():
     assert tu.diagnostics[0].fixits[0].range.end.column == 30
     assert tu.diagnostics[0].fixits[0].value == '.f0 = '
 
+
 def test_diagnostic_range():
     tu = get_tu('void f() { int i = "a" + 1; }')
     assert len(tu.diagnostics) == 1
@@ -55,11 +59,12 @@ def test_diagnostic_range():
     assert tu.diagnostics[0].ranges[0].end.line == 1
     assert tu.diagnostics[0].ranges[0].end.column == 27
     try:
-      tu.diagnostics[0].ranges[1].start.line
+        tu.diagnostics[0].ranges[1].start.line
     except IndexError:
-      assert True
+        assert True
     else:
-      assert False
+        assert False
+
 
 def test_diagnostic_category():
     """Ensure that category properties work."""
@@ -73,6 +78,7 @@ def test_diagnostic_category():
 
     assert d.category_number == 2
     assert d.category_name == 'Semantic Issue'
+
 
 def test_diagnostic_option():
     """Ensure that category option properties work."""

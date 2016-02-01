@@ -26,6 +26,7 @@ struct teststruct {
 
 """
 
+
 def test_a_struct():
     tu = get_tu(kInput)
 
@@ -78,6 +79,7 @@ def test_a_struct():
     assert fields[7].type.get_pointee().get_pointee().kind == TypeKind.POINTER
     assert fields[7].type.get_pointee().get_pointee().get_pointee().kind == TypeKind.INT
 
+
 def test_references():
     """Ensure that a Type maintains a reference to a TranslationUnit."""
 
@@ -96,13 +98,16 @@ def test_references():
     assert isinstance(t.translation_unit, TranslationUnit)
 
     # If the TU was destroyed, this should cause a segfault.
-    decl = t.get_declaration()
+    t.get_declaration()
 
-constarrayInput="""
+
+constarrayInput = """
 struct teststruct {
   void *A[2];
 };
 """
+
+
 def testConstantArray():
     tu = get_tu(constarrayInput)
 
@@ -114,6 +119,7 @@ def testConstantArray():
     assert fields[0].type.get_array_element_type() is not None
     assert fields[0].type.get_array_element_type().kind == TypeKind.POINTER
     assert fields[0].type.get_array_size() == 2
+
 
 def test_equal():
     """Ensure equivalence operators work on Type."""
@@ -134,6 +140,7 @@ def test_equal():
     assert a.type is not None
     assert a.type != 'foo'
 
+
 def test_type_spelling():
     """Ensure Type.spelling works."""
     tu = get_tu('int c[5]; void f(int i[]); int x; int v[x];')
@@ -150,6 +157,7 @@ def test_type_spelling():
     assert x.type.spelling == "int"
     assert v.type.spelling == "int [x]"
 
+
 def test_typekind_spelling():
     """Ensure TypeKind.spelling works."""
     tu = get_tu('int a;')
@@ -157,6 +165,7 @@ def test_typekind_spelling():
 
     assert a is not None
     assert a.type.kind.spelling == 'Int'
+
 
 def test_function_argument_types():
     """Ensure that Type.argument_types() works as expected."""
@@ -181,6 +190,7 @@ def test_function_argument_types():
     assert t0 == args2[0]
     assert t1 == args2[1]
 
+
 @raises(TypeError)
 def test_argument_types_string_key():
     """Ensure that non-int keys raise a TypeError."""
@@ -193,6 +203,7 @@ def test_argument_types_string_key():
 
     args['foo']
 
+
 @raises(IndexError)
 def test_argument_types_negative_index():
     """Ensure that negative indexes on argument_types Raises an IndexError."""
@@ -201,6 +212,7 @@ def test_argument_types_negative_index():
     args = f.type.argument_types()
 
     args[-1]
+
 
 @raises(IndexError)
 def test_argument_types_overflow_index():
@@ -211,6 +223,7 @@ def test_argument_types_overflow_index():
 
     args[2]
 
+
 @raises(Exception)
 def test_argument_types_invalid_type():
     """Ensure that obtaining argument_types on a Type without them raises."""
@@ -219,6 +232,7 @@ def test_argument_types_invalid_type():
     assert i is not None
 
     i.type.argument_types()
+
 
 def test_is_pod():
     """Ensure Type.is_pod() works."""
@@ -232,10 +246,11 @@ def test_is_pod():
     assert i.type.is_pod()
     assert not f.type.is_pod()
 
+
 def test_function_variadic():
     """Ensure Type.is_function_variadic works."""
 
-    source ="""
+    source = """
 #include <stdarg.h>
 
 void foo(int a, ...);
@@ -252,6 +267,7 @@ void bar(int a, int b);
     assert isinstance(foo.type.is_function_variadic(), bool)
     assert foo.type.is_function_variadic()
     assert not bar.type.is_function_variadic()
+
 
 def test_element_type():
     """Ensure Type.element_type works."""
@@ -270,6 +286,7 @@ def test_element_type():
     assert v.type.kind == TypeKind.VARIABLEARRAY
     assert v.type.element_type.kind == TypeKind.INT
 
+
 @raises(Exception)
 def test_invalid_element_type():
     """Ensure Type.element_type raises if type doesn't have elements."""
@@ -277,6 +294,7 @@ def test_invalid_element_type():
     i = get_cursor(tu, 'i')
     assert i is not None
     i.element_type
+
 
 def test_element_count():
     """Ensure Type.element_count works."""
@@ -295,6 +313,7 @@ def test_element_count():
     except:
         assert True
 
+
 def test_is_volatile_qualified():
     """Ensure Type.is_volatile_qualified works."""
 
@@ -309,6 +328,7 @@ def test_is_volatile_qualified():
     assert isinstance(i.type.is_volatile_qualified(), bool)
     assert i.type.is_volatile_qualified()
     assert not j.type.is_volatile_qualified()
+
 
 def test_is_restrict_qualified():
     """Ensure Type.is_restrict_qualified works."""
@@ -325,11 +345,12 @@ def test_is_restrict_qualified():
     assert i.type.is_restrict_qualified()
     assert not j.type.is_restrict_qualified()
 
+
 def test_record_layout():
     """Ensure Cursor.type.get_size, Cursor.type.get_align and
     Cursor.type.get_offset works."""
 
-    source ="""
+    source = """
 struct a {
     long a1;
     long a2:3;
@@ -337,12 +358,12 @@ struct a {
     long long a4;
 };
 """
-    tries=[(['-target','i386-linux-gnu'],(4,16,0,32,35,64)),
-           (['-target','nvptx64-unknown-unknown'],(8,24,0,64,67,128)),
-           (['-target','i386-pc-win32'],(8,16,0,32,35,64)),
-           (['-target','msp430-none-none'],(2,14,0,32,35,48))]
+    tries = [(['-target', 'i386-linux-gnu'], (4, 16, 0, 32, 35, 64)),
+           (['-target', 'nvptx64-unknown-unknown'], (8, 24, 0, 64, 67, 128)),
+           (['-target', 'i386-pc-win32'], (8, 16, 0, 32, 35, 64)),
+           (['-target', 'msp430-none-none'], (2, 14, 0, 32, 35, 48))]
     for flags, values in tries:
-        align,total,a1,a2,a3,a4 = values
+        align, total, a1, a2, a3, a4 = values
 
         tu = get_tu(source, flags=flags)
         teststruct = get_cursor(tu, 'a')
@@ -354,16 +375,17 @@ struct a {
         assert teststruct.type.get_offset(fields[1].spelling) == a2
         assert teststruct.type.get_offset(fields[2].spelling) == a3
         assert teststruct.type.get_offset(fields[3].spelling) == a4
-        assert fields[0].is_bitfield() == False
-        assert fields[1].is_bitfield() == True
+        assert fields[0].is_bitfield() is False
+        assert fields[1].is_bitfield() is True
         assert fields[1].get_bitfield_width() == 3
-        assert fields[2].is_bitfield() == True
+        assert fields[2].is_bitfield() is True
         assert fields[2].get_bitfield_width() == 4
-        assert fields[3].is_bitfield() == False
+        assert fields[3].is_bitfield() is False
+
 
 def test_offset():
     """Ensure Cursor.get_record_field_offset works in anonymous records"""
-    source="""
+    source = """
 struct Test {
   struct {int a;} typeanon;
   struct {
@@ -374,12 +396,12 @@ struct Test {
   };
   int bar;
 };"""
-    tries=[(['-target','i386-linux-gnu'],(4,16,0,32,64,96)),
-           (['-target','nvptx64-unknown-unknown'],(8,24,0,32,64,96)),
-           (['-target','i386-pc-win32'],(8,16,0,32,64,96)),
-           (['-target','msp430-none-none'],(2,14,0,32,64,96))]
+    tries = [(['-target', 'i386-linux-gnu'], (4, 16, 0, 32, 64, 96)),
+           (['-target', 'nvptx64-unknown-unknown'], (8, 24, 0, 32, 64, 96)),
+           (['-target', 'i386-pc-win32'], (8, 16, 0, 32, 64, 96)),
+           (['-target', 'msp430-none-none'], (2, 14, 0, 32, 64, 96))]
     for flags, values in tries:
-        align,total,f1,bariton,foo,bar = values
+        align, total, f1, bariton, foo, bar = values
         tu = get_tu(source)
         teststruct = get_cursor(tu, 'Test')
         children = list(teststruct.get_children())

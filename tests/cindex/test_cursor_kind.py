@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 
 from clang.cindex import CursorKind
 
+
 def test_name():
     assert CursorKind.UNEXPOSED_DECL.name == 'UNEXPOSED_DECL'
+
 
 def test_get_all_kinds():
     kinds = CursorKind.get_all_kinds()
@@ -16,6 +18,7 @@ def test_get_all_kinds():
     assert CursorKind.MS_ASM_STMT in kinds
     assert CursorKind.MODULE_IMPORT_DECL in kinds
     assert CursorKind.TYPE_ALIAS_TEMPLATE_DECL in kinds
+
 
 def test_kind_groups():
     """Check that every kind classifies to exactly one group."""

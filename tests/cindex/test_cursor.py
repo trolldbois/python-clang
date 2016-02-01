@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import ctypes
 import gc
 
 from clang.cindex import CursorKind
@@ -31,6 +30,7 @@ void f0(int a0, int a1) {
 }
 """
 
+
 def test_get_children():
     tu = get_tu(kInput)
 
@@ -44,7 +44,7 @@ def test_get_children():
     assert tu_nodes[0] != tu_nodes[1]
     assert tu_nodes[0].kind == CursorKind.STRUCT_DECL
     assert tu_nodes[0].spelling == 's0'
-    assert tu_nodes[0].is_definition() == True
+    assert tu_nodes[0].is_definition() is True
     assert tu_nodes[0].location.file.name == 't.c'
     assert tu_nodes[0].location.line == 1
     assert tu_nodes[0].location.column == 8
@@ -63,12 +63,13 @@ def test_get_children():
     assert tu_nodes[1].kind == CursorKind.STRUCT_DECL
     assert tu_nodes[1].spelling == 's1'
     assert tu_nodes[1].displayname == 's1'
-    assert tu_nodes[1].is_definition() == False
+    assert tu_nodes[1].is_definition() is False
 
     assert tu_nodes[2].kind == CursorKind.FUNCTION_DECL
     assert tu_nodes[2].spelling == 'f0'
     assert tu_nodes[2].displayname == 'f0(int, int)'
-    assert tu_nodes[2].is_definition() == True
+    assert tu_nodes[2].is_definition() is True
+
 
 def test_references():
     """Ensure that references to TranslationUnit are kept."""
@@ -85,7 +86,8 @@ def test_references():
     assert isinstance(cursor.translation_unit, TranslationUnit)
 
     # If the TU was destroyed, this should cause a segfault.
-    parent = cursor.semantic_parent
+    cursor.semantic_parent
+
 
 def test_canonical():
     source = 'struct X; struct X; struct X { int member; };'
@@ -98,6 +100,7 @@ def test_canonical():
 
     assert len(cursors) == 3
     assert cursors[1].canonical == cursors[2].canonical
+
 
 def test_is_const_method():
     """Ensure Cursor.is_const_method works."""
@@ -114,6 +117,7 @@ def test_is_const_method():
     assert foo.is_const_method()
     assert not bar.is_const_method()
 
+
 def test_is_mutable_field():
     """Ensure Cursor.is_mutable_field works."""
     source = 'class X { int x_; mutable int y_; };'
@@ -128,6 +132,7 @@ def test_is_mutable_field():
 
     assert not x_.is_mutable_field()
     assert y_.is_mutable_field()
+
 
 def test_is_static_method():
     """Ensure Cursor.is_static_method works."""
@@ -145,6 +150,7 @@ def test_is_static_method():
     assert foo.is_static_method()
     assert not bar.is_static_method()
 
+
 def test_is_pure_virtual_method():
     """Ensure Cursor.is_pure_virtual_method works."""
     source = 'class X { virtual void foo() = 0; virtual void bar(); };'
@@ -160,6 +166,7 @@ def test_is_pure_virtual_method():
     assert foo.is_pure_virtual_method()
     assert not bar.is_pure_virtual_method()
 
+
 def test_is_virtual_method():
     """Ensure Cursor.is_virtual_method works."""
     source = 'class X { virtual void foo(); void bar(); };'
@@ -174,6 +181,7 @@ def test_is_virtual_method():
 
     assert foo.is_virtual_method()
     assert not bar.is_virtual_method()
+
 
 def test_underlying_type():
     tu = get_tu('typedef int foo;')
@@ -191,6 +199,8 @@ kParentTest = """\
 
         void C::f() { }
     """
+
+
 def test_semantic_parent():
     tu = get_tu(kParentTest, 'cpp')
     curs = get_cursors(tu, 'f')
@@ -198,6 +208,7 @@ def test_semantic_parent():
     assert(len(curs) == 2)
     assert(curs[0].semantic_parent == curs[1].semantic_parent)
     assert(curs[0].semantic_parent == decl)
+
 
 def test_lexical_parent():
     tu = get_tu(kParentTest, 'cpp')
@@ -208,6 +219,7 @@ def test_lexical_parent():
     assert(curs[0].lexical_parent == decl)
     assert(curs[1].lexical_parent == tu.cursor)
 
+
 def test_enum_type():
     tu = get_tu('enum TEST { FOO=1, BAR=2 };')
     enum = get_cursor(tu, 'TEST')
@@ -217,6 +229,7 @@ def test_enum_type():
     enum_type = enum.enum_type
     assert enum_type.kind == TypeKind.UINT
 
+
 def test_enum_type_cpp():
     tu = get_tu('enum TEST : long long { FOO=1, BAR=2 };', lang="cpp")
     enum = get_cursor(tu, 'TEST')
@@ -225,12 +238,14 @@ def test_enum_type_cpp():
     assert enum.kind == CursorKind.ENUM_DECL
     assert enum.enum_type.kind == TypeKind.LONGLONG
 
+
 def test_objc_type_encoding():
     tu = get_tu('int i;', lang='objc')
     i = get_cursor(tu, 'i')
 
     assert i is not None
     assert i.objc_type_encoding == 'i'
+
 
 def test_enum_values():
     tu = get_tu('enum TEST { SPAM=1, EGG, HAM = EGG * 20};')
@@ -251,6 +266,7 @@ def test_enum_values():
     assert ham.kind == CursorKind.ENUM_CONSTANT_DECL
     assert ham.enum_value == 40
 
+
 def test_enum_values_cpp():
     tu = get_tu('enum TEST : long long { SPAM = -1, HAM = 0x10000000000};', lang="cpp")
     enum = get_cursor(tu, 'TEST')
@@ -268,6 +284,7 @@ def test_enum_values_cpp():
     assert ham.kind == CursorKind.ENUM_CONSTANT_DECL
     assert ham.enum_value == 0x10000000000
 
+
 def test_annotation_attribute():
     tu = get_tu('int foo (void) __attribute__ ((annotate("here be annotation attribute")));')
 
@@ -281,6 +298,7 @@ def test_annotation_attribute():
     else:
         assert False, "Couldn't find annotation"
 
+
 def test_result_type():
     tu = get_tu('int foo();')
     foo = get_cursor(tu, 'foo')
@@ -288,6 +306,7 @@ def test_result_type():
     assert foo is not None
     t = foo.result_type
     assert t.kind == TypeKind.INT
+
 
 def test_get_tokens():
     """Ensure we can map cursors back to tokens."""
@@ -298,6 +317,7 @@ def test_get_tokens():
     assert len(tokens) == 7
     assert tokens[0].spelling == 'int'
     assert tokens[1].spelling == 'foo'
+
 
 def test_get_arguments():
     tu = get_tu('void foo(int i, int j);')
@@ -316,11 +336,13 @@ kTemplateArgTest = """\
         void foo<-7, float, true>();
     """
 
+
 def test_get_num_template_arguments():
     tu = get_tu(kTemplateArgTest, lang='cpp')
     foos = get_cursors(tu, 'foo')
 
     assert foos[1].get_num_template_arguments() == 3
+
 
 def test_get_template_argument_kind():
     tu = get_tu(kTemplateArgTest, lang='cpp')
@@ -330,25 +352,29 @@ def test_get_template_argument_kind():
     assert foos[1].get_template_argument_kind(1) == TemplateArgumentKind.TYPE
     assert foos[1].get_template_argument_kind(2) == TemplateArgumentKind.INTEGRAL
 
+
 def test_get_template_argument_type():
     tu = get_tu(kTemplateArgTest, lang='cpp')
     foos = get_cursors(tu, 'foo')
 
     assert foos[1].get_template_argument_type(1).kind == TypeKind.FLOAT
 
+
 def test_get_template_argument_value():
     tu = get_tu(kTemplateArgTest, lang='cpp')
     foos = get_cursors(tu, 'foo')
 
     assert foos[1].get_template_argument_value(0) == -7
-    assert foos[1].get_template_argument_value(2) == True
+    assert foos[1].get_template_argument_value(2) == 1
+
 
 def test_get_template_argument_unsigned_value():
     tu = get_tu(kTemplateArgTest, lang='cpp')
     foos = get_cursors(tu, 'foo')
 
     assert foos[1].get_template_argument_unsigned_value(0) == 2 ** 32 - 7
-    assert foos[1].get_template_argument_unsigned_value(2) == True
+    assert foos[1].get_template_argument_unsigned_value(2) == 1
+
 
 def test_referenced():
     tu = get_tu('void foo(); void bar() { foo(); }')
@@ -358,6 +384,7 @@ def test_referenced():
         if c.kind == CursorKind.CALL_EXPR:
             assert c.referenced.spelling == foo.spelling
             break
+
 
 def test_mangled_name():
     kInputForMangling = """\

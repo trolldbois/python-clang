@@ -2,37 +2,40 @@ from __future__ import unicode_literals
 
 from clang.cindex import CompilationDatabase
 from clang.cindex import CompilationDatabaseError
-from clang.cindex import CompileCommands
-from clang.cindex import CompileCommand
 import os
 import gc
 
 kInputsDir = os.path.join(os.path.dirname(__file__), 'INPUTS')
 
+
 def test_create_fail():
     """Check we fail loading a database with an assertion"""
     path = os.path.dirname(__file__)
     try:
-      cdb = CompilationDatabase.fromDirectory(path)
+        CompilationDatabase.fromDirectory(path)
     except CompilationDatabaseError as e:
-      assert e.cdb_error == CompilationDatabaseError.ERROR_CANNOTLOADDATABASE
+        assert e.cdb_error == CompilationDatabaseError.ERROR_CANNOTLOADDATABASE
     else:
-      assert False
+        assert False
+
 
 def test_create():
     """Check we can load a compilation database"""
-    cdb = CompilationDatabase.fromDirectory(kInputsDir)
+    CompilationDatabase.fromDirectory(kInputsDir)
+
 
 def test_lookup_fail():
     """Check file lookup failure"""
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
     assert cdb.getCompileCommands('file_do_not_exist.cpp') is None
 
+
 def test_lookup_succeed():
     """Check we get some results if the file exists in the db"""
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
     cmds = cdb.getCompileCommands('/home/john.doe/MyProject/project.cpp')
     assert len(cmds) != 0
+
 
 def test_all_compilecommand():
     """Check we get all results from the db"""
@@ -71,6 +74,7 @@ def test_all_compilecommand():
         for arg, exp in zip(cmds[i].arguments, expected[i]['line']):
             assert arg == exp
 
+
 def test_1_compilecommand():
     """Check file with single compile command"""
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
@@ -84,6 +88,7 @@ def test_1_compilecommand():
     ]
     for arg, exp in zip(cmds[0].arguments, expected):
         assert arg == exp
+
 
 def test_2_compilecommand():
     """Check file with 2 compile commands"""
@@ -114,6 +119,7 @@ def test_2_compilecommand():
         for arg, exp in zip(cmds[i].arguments, expected[i]['line']):
             assert arg == exp
 
+
 def test_compilecommand_iterator_stops():
     """Check that iterator stops after the correct number of elements"""
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
@@ -122,13 +128,15 @@ def test_compilecommand_iterator_stops():
         count += 1
         assert count <= 2
 
+
 def test_compilationDB_references():
     """Ensure CompilationsCommands are independent of the database"""
     cdb = CompilationDatabase.fromDirectory(kInputsDir)
     cmds = cdb.getCompileCommands('/home/john.doe/MyProject/project.cpp')
     del cdb
     gc.collect()
-    workingdir = cmds[0].directory
+    cmds[0].directory
+
 
 def test_compilationCommands_references():
     """Ensure CompilationsCommand keeps a reference to CompilationCommands"""
@@ -138,5 +146,4 @@ def test_compilationCommands_references():
     cmd0 = cmds[0]
     del cmds
     gc.collect()
-    workingdir = cmd0.directory
-
+    cmd0.directory

@@ -5,8 +5,10 @@ import os
 
 kInputsDir = os.path.join(os.path.dirname(__file__), 'INPUTS')
 
+
 def test_create():
-    index = Index.create()
+    Index.create()
+
 
 # FIXME: test Index.read
 

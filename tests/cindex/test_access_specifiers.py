@@ -1,11 +1,10 @@
 from __future__ import unicode_literals
 
 from clang.cindex import AccessSpecifier
-from clang.cindex import Cursor
-from clang.cindex import TranslationUnit
 
 from .util import get_cursor
 from .util import get_tu
+
 
 def test_access_specifiers():
     """Ensure that C++ access specifiers are available on cursors"""
@@ -19,10 +18,10 @@ protected:
 private:
   void private_member_function();
 };
-""", lang = 'cpp')
+""", lang='cpp')
 
     test_class = get_cursor(tu, "test_class")
-    assert test_class.access_specifier == AccessSpecifier.INVALID;
+    assert test_class.access_specifier == AccessSpecifier.INVALID
 
     public = get_cursor(tu.cursor, "public_member_function")
     assert public.access_specifier == AccessSpecifier.PUBLIC
@@ -32,4 +31,3 @@ private:
 
     private = get_cursor(tu.cursor, "private_member_function")
     assert private.access_specifier == AccessSpecifier.PRIVATE
-

@@ -7,12 +7,14 @@ from clang.cindex import SourceRange
 from .util import get_cursor
 from .util import get_tu
 
-baseInput="int one;\nint two;\n"
+baseInput = "int one;\nint two;\n"
+
 
 def assert_location(loc, line, column, offset):
     assert loc.line == line
     assert loc.column == column
     assert loc.offset == offset
+
 
 def test_location():
     tu = get_tu(baseInput)
@@ -22,8 +24,8 @@ def test_location():
     assert one is not None
     assert two is not None
 
-    assert_location(one.location,line=1,column=5,offset=4)
-    assert_location(two.location,line=2,column=5,offset=13)
+    assert_location(one.location, line=1, column=5, offset=4)
+    assert_location(two.location, line=2, column=5, offset=13)
 
     # adding a linebreak at top should keep columns same
     tu = get_tu('\n' + baseInput)
@@ -33,16 +35,16 @@ def test_location():
     assert one is not None
     assert two is not None
 
-    assert_location(one.location,line=2,column=5,offset=5)
-    assert_location(two.location,line=3,column=5,offset=14)
+    assert_location(one.location, line=2, column=5, offset=5)
+    assert_location(two.location, line=3, column=5, offset=14)
 
     # adding a space should affect column on first line only
     tu = get_tu(' ' + baseInput)
     one = get_cursor(tu, 'one')
     two = get_cursor(tu, 'two')
 
-    assert_location(one.location,line=1,column=6,offset=5)
-    assert_location(two.location,line=2,column=5,offset=14)
+    assert_location(one.location, line=1, column=6, offset=5)
+    assert_location(two.location, line=2, column=5, offset=14)
 
     # define the expected location ourselves and see if it matches
     # the returned location
@@ -71,17 +73,18 @@ def test_location():
 
     assert verified
 
+
 def test_extent():
     tu = get_tu(baseInput)
     one = get_cursor(tu, 'one')
     two = get_cursor(tu, 'two')
 
-    assert_location(one.extent.start,line=1,column=1,offset=0)
-    assert_location(one.extent.end,line=1,column=8,offset=7)
+    assert_location(one.extent.start, line=1, column=1, offset=0)
+    assert_location(one.extent.end, line=1, column=8, offset=7)
     assert baseInput[one.extent.start.offset:one.extent.end.offset] == "int one"
 
-    assert_location(two.extent.start,line=2,column=1,offset=9)
-    assert_location(two.extent.end,line=2,column=8,offset=16)
+    assert_location(two.extent.start, line=2, column=1, offset=9)
+    assert_location(two.extent.end, line=2, column=8, offset=16)
     assert baseInput[two.extent.start.offset:two.extent.end.offset] == "int two"
 
     file = File.from_name(tu, 't.c')

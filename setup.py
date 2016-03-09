@@ -4,11 +4,11 @@
 from setuptools import setup
 
 setup(name="clang",
-      version="3.7.dev227628",
+      version="3.7",
       description="libclang python bindings",
       long_description=open("README.txt").read(),
-      url="https://github.com/trolldbois/python-clang",
-      download_url="https://github.com/trolldbois/python-clang/releases",
+      url="https://github.com/llvm-mirror/clang/bindings/python/",
+      #download_url="https://github.com/trolldbois/python-clang/releases",
       license="License :: OSI Approved :: University of Illinois/NCSA Open Source License",
       classifiers=[
           "Intended Audience :: Developers",

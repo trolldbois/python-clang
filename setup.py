@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name="clang",
-    version="3.9",
+    version="4.0",
     description="libclang python bindings",
     long_description=open("README.txt").read(),
     url="http://clang.llvm.org/",
@@ -19,6 +19,7 @@ setup(
         "Topic :: Software Development :: Compilers",
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
     ],
     keywords=["llvm", "clang", "libclang"],
     author="LLVM team",

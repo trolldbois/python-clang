@@ -13,7 +13,6 @@ setup(
     license="License :: OSI Approved :: University of Illinois/NCSA Open Source License",
     classifiers=[
         "Intended Audience :: Developers",
-        "Programming Language :: Python",
         "License :: OSI Approved :: University of Illinois/NCSA Open Source License",
         "Development Status :: 5 - Production/Stable",
         "Topic :: Software Development :: Compilers",

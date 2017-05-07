@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name="clang",
-      version="3.8",
+      version="3.8.1",
       description="libclang python bindings",
       long_description=open("README.txt").read(),
       url="https://github.com/llvm-mirror/clang/bindings/python",
@@ -14,6 +14,8 @@ setup(name="clang",
           "Intended Audience :: Developers",
           "License :: OSI Approved :: GNU General Public License (GPL)",
           "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.7",
           "Development Status :: 5 - Production/Stable",
           "Topic :: Software Development :: Compilers"
       ],

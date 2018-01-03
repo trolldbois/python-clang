@@ -19,10 +19,12 @@ install:
   - sudo apt-get update
   - sudo apt-get install libclang1-5.0 libclang-5.0-dev --yes --force-yes
   - pip install coveralls
+  - find /usr/lib -type f -name libclang-5\*
+
 
 script:
 # run tests
-  - python setup.py test
+#  - python setup.py test
   - coverage run --source=clang setup.py test
 
 after_success:

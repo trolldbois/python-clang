@@ -13,7 +13,11 @@ python:
 
 install:
 # travis-ci use trusty, with py27, py36 and clang5
-  - sudo apt-get install libclang1-5.0 libclang-5.0-dev  --yes --force-yes
+  - sudo apt-add-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-5.0 main" --yes
+  - sudo apt-add-repository "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu precise main"  --yes
+  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get install libclang1-5.0 libclang-5.0-dev --yes --force-yes
   - pip install coveralls
 
 script:

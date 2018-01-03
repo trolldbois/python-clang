@@ -18,8 +18,10 @@ install:
   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
   - sudo apt-get update
   - sudo apt-get install libclang1-5.0 libclang-5.0-dev --yes --force-yes
+# we have to do it by hand, because python-clang does not search for versions library
+  - sudo ln -v -s /usr/lib/x86_64-linux-gnu/libclang-5.0.so.1 /usr/lib/x86_64-linux-gnu/libclang.so
+  - sudo ldconfig
   - pip install coveralls
-  - find /usr/lib -type f -name libclang-5\*
 
 
 script:

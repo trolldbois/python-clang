@@ -1,0 +1,6 @@
+version, pyversion, url
+11.0, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-11/python3-clang-11_11.0.0~%2b%2b20200808123325%2b279922f108c-1~exp1~20200807223952.39_i386.deb
+10.0.1, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-10/python3-clang-10_10.0.1~%2b%2b20200809072601%2bef32c611aa2-1~exp1~20200809173202.199_i386.deb
+9.0, 2, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-9/python-clang-9_9~%2b20191211112125%2bc1a0a213378-1~exp1~20191211223511.119_i386.deb
+8.0.1, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-8/python3-clang-8_8.0.1%2bsvn369350-1~exp1~20200303215641.87_i386.deb
+7.1.0, 2, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-7/python-clang-7_7.1.0~svn353565-1~exp1~20190406085125.68_i386.deb

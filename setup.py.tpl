@@ -4,7 +4,7 @@
 from setuptools import setup
 
 long_description="""This is the python bindings subdir of llvm clang repository.
-https://github.com/llvm-mirror/clang/tree/master/bindings/python
+https://github.com/llvm/llvm-project/tree/main/clang/bindings/python
 
 This is a non-official packaging directly from the debian packages for the purpose of pypi package.
 """
@@ -16,10 +16,10 @@ setup(
     long_description=long_description,
     url="http://clang.llvm.org/",
     download_url="http://llvm.org/releases/download.html",
-    license="License :: OSI Approved :: University of Illinois/NCSA Open Source License",
+    license="Apache-2.0 with LLVM exception",
     classifiers=[
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: University of Illinois/NCSA Open Source License",
+        "License :: OSI Approved :: Apache Software License",
         "Development Status :: 5 - Production/Stable",
         "Topic :: Software Development :: Compilers",
         "Programming Language :: Python :: %PYTHON_VERSION%",

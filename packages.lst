@@ -1,4 +1,6 @@
 version, pyversion, url
+#19.1.7, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-19/python3-clang-19_19.1.7~%2B%2B20250114103027%2Bcd708029e0b2-1~exp1~20250114103145.84_amd64.deb
+#18.1.8, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-18/python3-clang-18_18.1.8~%2B%2B20240731024517%2B3b5b5c1ec4a3-1~exp1~20240731144612.160_amd64.deb
 #17.0.6, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-17/python3-clang-17_17.0.6~%2B%2B20231205064722%2B6009708b4367-1~exp1~20231205064821.75_amd64.deb
 #16.0.6, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-16/python3-clang-16_16.0.6~%2b%2b20230908115458%2b7cbf1a259152-1~exp1~20230908115553.113_amd64.deb
 #16.0.1, 3, https://apt.llvm.org/unstable/pool/main/l/llvm-toolchain-16/python3-clang-16_16.0.1~%2b%2b20230328073207%2b42d1b276f779-1~exp1~20230328073220.62_amd64.deb

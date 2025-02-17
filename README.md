@@ -25,6 +25,7 @@ This repository follows the [license agreement](https://github.com/llvm/llvm-pro
 
 ## Release SOP
 
-GitHub Workflows will create new pull requests when LLVM releases new versions.
-Merge the PR, then create a new release, with a new tag "v<version>". 
-The creation of the tag will trigger a push, which will trigger the release/pypi upload workflow
+- GitHub Workflows will create new pull requests when LLVM releases new versions.
+- Merge the PR
+- Create a new release, with a new tag "v<version>". 
+- The creation of the tag will trigger a push, which will trigger the release/pypi upload workflow, through Trusted Publishing

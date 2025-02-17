@@ -16,12 +16,12 @@ pip install clang
 Or for a specific version:
 
 ```bash
-pip install clang==14
+pip install clang==19
 ```
 
 ## License
 
-This project is licensed under the Apache-2.0 License with LLVM exception. See the LICENSE file for more details.
+This repository follows the [license agreement](https://github.com/llvm/llvm-project/blob/main/LICENSE.TXT) of the LLVM project, see Apache-2.0 WITH LLVM-exception.
 
 ## Release SOP
 

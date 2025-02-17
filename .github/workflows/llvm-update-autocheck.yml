@@ -27,6 +27,7 @@ jobs:
             echo "set(LLVM_VERSION $new_version)" > llvm_version.cmake
             curl -L https://github.com/llvm/llvm-project/releases/download/llvmorg-${new_version}/clang-${new_version}.src.tar.xz -o clang-${new_version}.src.tar.xz
             hash=$(sha256sum clang-${new_version}.src.tar.xz | cut -d ' ' -f1)
+            rm -f clang-${new_version}.src.tar.xz
             echo "set(LLVM_SHA256 $hash)" >> llvm_version.cmake
             echo "LLVM version updated"
           else

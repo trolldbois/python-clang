@@ -22,3 +22,9 @@ pip install clang==14
 ## License
 
 This project is licensed under the Apache-2.0 License with LLVM exception. See the LICENSE file for more details.
+
+## Release SOP
+
+GitHub Workflows will create new pull requests when LLVM releases new versions.
+Merge the PR, then create a new release, with a new tag "v<version>". 
+The creation of the tag will trigger a push, which will trigger the release/pypi upload workflow

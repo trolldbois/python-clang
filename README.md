@@ -1,3 +1,8 @@
+[![PyPI](https://img.shields.io/pypi/v/clang)](https://pypi.org/project/clang)
+![Python](https://img.shields.io/pypi/pyversions/clang)
+![Downloads](https://img.shields.io/pypi/dw/clang)
+[![License](https://img.shields.io/pypi/l/clang)](https://github.com/trolldbois/clang/blob/master/LICENSE.TXT)
+
 # Clang Python package for PyPI
 
 This is the python bindings subdir of llvm clang repository.

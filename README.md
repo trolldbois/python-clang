@@ -5,10 +5,12 @@
 
 # Clang Python package for PyPI
 
-This is the python bindings subdir of llvm clang repository.
-https://github.com/llvm/llvm-project/tree/main/clang/bindings/python
+This repository builds and releases the [clang package on pypi](https://pypi.org/project/clang/) .
 
-The debian packages are pulled from llvm repo, extracted and pushed to pypi.
+The wheel is built from the LLVM libclang python binding source code directly. Thanks @nightlark for the 2025 refresh of the build process.
+
+This package does not contain binary files for the libclang library, only the python bindings.
+
 
 ## Installation
 

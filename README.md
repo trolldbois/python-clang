@@ -23,7 +23,7 @@ pip install clang
 Or for a specific version:
 
 ```bash
-pip install clang==19
+pip install clang==20
 ```
 
 ## License
@@ -32,7 +32,7 @@ This repository follows the [license agreement](https://github.com/llvm/llvm-pro
 
 ## Release SOP
 
-- GitHub Workflows will create new pull requests when LLVM releases new versions.
-- Merge the PR
+- GitHub Workflows will create new pull requests weekly when LLVM releases new major versions. You can always manually trigger the GitHub Actions.
+- Merge the PR created by GH Action.
 - Create a new release, with a new tag "v<version>". 
 - The creation of the tag will trigger a push, which will trigger the release/pypi upload workflow, through Trusted Publishing

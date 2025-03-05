@@ -23,7 +23,7 @@ pip install clang
 Or for a specific version:
 
 ```bash
-pip install clang==19
+pip install clang==20
 ```
 
 ## License

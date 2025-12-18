@@ -1,0 +1,190 @@
+# Publish to PyPI
+#
+# Runs daily to check for new LLVM versions and automatically publish.
+# Checks all major.minor versions >= 16 and publishes the latest patch for each.
+#
+# Manual trigger:
+#   1. Go to Actions → Publish to PyPI → Run workflow
+#   2. Optionally enter LLVM versions (comma-separated, e.g., "18.1.0,19.1.0,20.1.0")
+#   3. Check "force" to re-publish if tag exists but PyPI publish failed
+#   4. Click "Run workflow"
+
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      llvm_versions:
+        description: 'LLVM versions to release, comma-separated (leave empty for latest)'
+        required: false
+        type: string
+      force:
+        description: 'Force re-publish even if tag exists (use if PyPI publish failed)'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 10 * * *'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine versions to publish
+        id: versions
+        run: |
+          if [ -n "${{ inputs.llvm_versions }}" ]; then
+            # Convert comma-separated input to space-separated
+            versions=$(echo "${{ inputs.llvm_versions }}" | tr ',' ' ' | xargs)
+            echo "Using manually specified versions: $versions"
+          else
+            # Get latest patch version for each major.minor >= 16
+            versions=$(git -c 'versionsort.suffix=-' \
+              ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/llvm/llvm-project 'llvmorg-*.*.*' \
+              | sed 's/.*llvmorg-//' \
+              | awk -F. '$1 >= 16' \
+              | sort -t. -k1,1n -k2,2n -k3,3n \
+              | awk -F. '{key=$1"."$2; versions[key]=$0} END {for (k in versions) print versions[k]}' \
+              | sort -t. -k1,1n -k2,2n \
+              | tr '\n' ' ')
+            echo "Detected LLVM versions (latest patch per major.minor): $versions"
+          fi
+          echo "versions=$versions" >> $GITHUB_OUTPUT
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Publish each version sequentially
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          failed_versions=""
+          published_versions=""
+
+          for version in ${{ steps.versions.outputs.versions }}; do
+            echo "::group::Processing LLVM $version"
+
+            # Fetch latest to check for existing tags and get any new commits
+            git fetch origin --tags
+
+            # Check if tag already exists (skip unless force is set)
+            tag_exists=false
+            if git rev-parse "v$version" >/dev/null 2>&1; then
+              if [ "$FORCE" != "true" ]; then
+                echo "Tag v$version already exists, skipping (use force=true to re-publish)"
+                echo "::endgroup::"
+                continue
+              fi
+              echo "Tag v$version exists but force=true, re-publishing..."
+              tag_exists=true
+            fi
+
+            # Track if this version fails
+            version_failed=false
+
+            # Pull latest changes (from previous iterations or other sources)
+            if ! git pull --rebase origin master; then
+              echo "::error::Failed to pull latest changes for $version"
+              failed_versions="$failed_versions $version"
+              echo "::endgroup::"
+              continue
+            fi
+
+            # Download and compute hash
+            echo "Downloading clang-${version}.src.tar.xz..."
+            if ! curl -fSL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/clang-${version}.src.tar.xz" -o "clang-${version}.src.tar.xz"; then
+              echo "::error::Failed to download LLVM $version"
+              failed_versions="$failed_versions $version"
+              echo "::endgroup::"
+              continue
+            fi
+
+            hash=$(sha256sum "clang-${version}.src.tar.xz" | cut -d ' ' -f1)
+            rm -f "clang-${version}.src.tar.xz"
+
+            # Update version file
+            echo "set(LLVM_VERSION $version)" > llvm_version.cmake
+            echo "set(LLVM_SHA256 $hash)" >> llvm_version.cmake
+            cat llvm_version.cmake
+
+            # Commit and tag (skip if force and tag already exists)
+            if [ "$tag_exists" = "false" ]; then
+              git add llvm_version.cmake
+              git commit -m "Update LLVM to version $version"
+              git tag "v$version"
+              if ! git push origin HEAD:master --tags; then
+                echo "::error::Failed to push tag for $version"
+                failed_versions="$failed_versions $version"
+                echo "::endgroup::"
+                continue
+              fi
+            fi
+
+            # Build
+            echo "Building wheel..."
+            if ! uv build; then
+              echo "::error::Failed to build wheel for $version"
+              failed_versions="$failed_versions $version"
+              version_failed=true
+            fi
+
+            # Publish to PyPI
+            if [ "$version_failed" = "false" ]; then
+              echo "Publishing to PyPI..."
+              if ! uv publish --trusted-publishing always; then
+                echo "::error::Failed to publish $version to PyPI"
+                failed_versions="$failed_versions $version"
+                version_failed=true
+              fi
+            fi
+
+            # Create GitHub Release (even if PyPI failed, so we track the tag)
+            if [ "$version_failed" = "false" ]; then
+              if ! gh release view "v$version" >/dev/null 2>&1; then
+                echo "Creating GitHub release for v$version"
+                if ! gh release create "v$version" \
+                  --title "v$version" \
+                  --notes $'LLVM '"$version"$' Python bindings\n\n[LLVM Release Notes](https://releases.llvm.org/'"$version"$'/docs/ReleaseNotes.html)'; then
+                  echo "::warning::Failed to create GitHub release for $version"
+                fi
+              else
+                echo "Release v$version already exists"
+              fi
+              published_versions="$published_versions $version"
+            fi
+
+            # Clean dist for next iteration
+            rm -rf dist/
+
+            echo "::endgroup::"
+          done
+
+          # Report results
+          if [ -n "$published_versions" ]; then
+            echo "Successfully published:$published_versions"
+          fi
+
+          if [ -n "$failed_versions" ]; then
+            echo "failed_versions=$failed_versions" >> $GITHUB_OUTPUT
+            echo "::error::Failed to publish versions:$failed_versions"
+          fi
+
+      - name: Check for failures
+        if: always() && steps.publish.outputs.failed_versions != ''
+        run: |
+          echo "The following versions failed to publish: ${{ steps.publish.outputs.failed_versions }}"
+          exit 1

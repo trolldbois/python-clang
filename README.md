@@ -11,6 +11,10 @@ The wheel is built from the LLVM libclang python binding source code directly. T
 
 This package does not contain binary files for the libclang library, only the python bindings.
 
+## Documentation
+
+- [Official libclang documentation](https://clang.llvm.org/docs/Tooling.html#libclang)
+- [Python bindings source](https://github.com/llvm/llvm-project/tree/main/clang/bindings/python)
 
 ## Installation
 
@@ -30,9 +34,6 @@ pip install clang==20
 
 This repository follows the [license agreement](https://github.com/llvm/llvm-project/blob/main/LICENSE.TXT) of the LLVM project, see Apache-2.0 WITH LLVM-exception.
 
-## Release SOP
+## Releases
 
-- GitHub Workflows will create new pull requests weekly when LLVM releases new major versions. You can always manually trigger the GitHub Actions.
-- Merge the PR created by GH Action.
-- Create a new release, with a new tag "v<version>". 
-- The creation of the tag will trigger a push, which will trigger the release/pypi upload workflow, through Trusted Publishing
+Releases are automated. When LLVM publishes a new version, this repository automatically detects it (checked daily), builds the wheel, and publishes to PyPI.

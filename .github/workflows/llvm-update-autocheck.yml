@@ -35,7 +35,7 @@ jobs:
           fi
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
             token: ${{ secrets.GITHUB_TOKEN }}
             commit-message: Update LLVM to version ${{ steps.check-llvm.outputs.new_version }}
